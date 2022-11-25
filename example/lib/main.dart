@@ -1,15 +1,12 @@
-import 'dart:html';
-import 'dart:io';
-
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:flutter_document_scan_sdk/document_result.dart';
 import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk.dart';
-
+import 'package:flutter_document_scan_sdk/template.dart';
 import 'dart:ui' as ui;
-
-import 'package:image_picker/image_picker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,9 +20,9 @@ class MyApp extends StatefulWidget {
 }
 
 class ImagePainter extends CustomPainter {
-  ImagePainter(this.image, this.points);
+  ImagePainter(this.image, this.results);
   final ui.Image image;
-  final List<Offset> points;
+  final List<DocumentResult> results;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -35,23 +32,25 @@ class ImagePainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     canvas.drawImage(image, Offset.zero, paint);
-    canvas.drawLine(Offset(126, 27), Offset(733, 65), paint);
-    canvas.drawLine(Offset(733, 65), Offset(715, 989), paint);
-    canvas.drawLine(Offset(715, 989), Offset(20, 934), paint);
-    canvas.drawLine(Offset(20, 934), Offset(126, 27), paint);
+    for (var result in results) {
+      canvas.drawLine(result.points[0], result.points[1], paint);
+      canvas.drawLine(result.points[1], result.points[2], paint);
+      canvas.drawLine(result.points[2], result.points[3], paint);
+      canvas.drawLine(result.points[3], result.points[0], paint);
+    }
   }
 
   @override
   bool shouldRepaint(ImagePainter oldDelegate) =>
-      image != oldDelegate.image || points != oldDelegate.points;
+      image != oldDelegate.image || results != oldDelegate.results;
 }
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   final _flutterDocumentScanSdkPlugin = FlutterDocumentScanSdk();
-  final picker = ImagePicker();
   String file = '';
   late ui.Image image;
+  List<DocumentResult> detectionResults = [];
 
   @override
   void initState() {
@@ -77,6 +76,14 @@ class _MyAppState extends State<MyApp> {
       platformVersion = 'Failed to get platform version.';
     }
 
+    int ret = await _flutterDocumentScanSdkPlugin.init(
+        "https://cdn.jsdelivr.net/npm/dynamsoft-document-normalizer@1.0.10/dist/",
+        "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==");
+    // String params = await _flutterDocumentScanSdkPlugin.getParameters();
+    // print(params);
+
+    ret = await _flutterDocumentScanSdkPlugin.setParameters(Template.grayscale);
+    print('setParameters: $ret');
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
@@ -87,12 +94,12 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  Widget createCustomImage(ui.Image image) {
+  Widget createCustomImage(ui.Image image, List<DocumentResult> results) {
     return SizedBox(
       width: image.width.toDouble(),
       height: image.height.toDouble(),
       child: CustomPaint(
-        painter: ImagePainter(image, []),
+        painter: ImagePainter(image, results),
       ),
     );
   }
@@ -102,20 +109,28 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('Dynamsoft Document Normalizer'),
         ),
         body: Stack(children: <Widget>[
           Center(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  file == ''
-                      ? Image.asset('images/default.png')
-                      : createCustomImage(image),
-                ],
-              ),
-            ),
-          ),
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      file == ''
+                          ? Image.asset('images/default.png')
+                          : createCustomImage(image, detectionResults),
+                    ],
+                  ),
+                ),
+                SingleChildScrollView(
+                  child: Column(
+                    children: [Image.asset('images/default.png')],
+                  ),
+                ),
+              ])),
           Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -128,20 +143,41 @@ class _MyAppState extends State<MyApp> {
                           textColor: Colors.white,
                           color: Colors.blue,
                           onPressed: () async {
-                            final pickedFile = await picker.pickImage(
-                                source: ImageSource.camera);
+                            const XTypeGroup typeGroup = XTypeGroup(
+                              label: 'images',
+                              extensions: <String>['jpg', 'png'],
+                            );
+                            final XFile? pickedFile = await openFile(
+                                acceptedTypeGroups: <XTypeGroup>[typeGroup]);
                             if (pickedFile != null) {
                               image = await loadImage(pickedFile);
-                              setState(() {
-                                file = pickedFile.path;
-                              });
+                              file = pickedFile.path;
+                              detectionResults =
+                                  await _flutterDocumentScanSdkPlugin
+                                      .detect(file);
+                              setState(() {});
                             }
                           },
                           child: const Text('Load Document')),
                       MaterialButton(
                           textColor: Colors.white,
                           color: Colors.blue,
-                          onPressed: () async {},
+                          onPressed: () async {
+                            const String fileName = 'suggested_name.txt';
+                            final String? path =
+                                await getSavePath(suggestedName: fileName);
+                            if (path == null) {
+                              // Operation was canceled by the user.
+                              return;
+                            }
+
+                            final Uint8List fileData =
+                                Uint8List.fromList('Hello World!'.codeUnits);
+                            const String mimeType = 'text/plain';
+                            final XFile textFile = XFile.fromData(fileData,
+                                mimeType: mimeType, name: fileName);
+                            await textFile.saveTo(path);
+                          },
                           child: const Text("Save Document"))
                     ]),
               ),
