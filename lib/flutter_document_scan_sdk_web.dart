@@ -6,10 +6,14 @@ import 'dart:html' as html show window;
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
+import 'document_result.dart';
 import 'flutter_document_scan_sdk_platform_interface.dart';
+import 'web_ddn_manager.dart';
 
 /// A web implementation of the FlutterDocumentScanSdkPlatform of the FlutterDocumentScanSdk plugin.
 class FlutterDocumentScanSdkWeb extends FlutterDocumentScanSdkPlatform {
+  final DDNManager _ddnManager = DDNManager();
+
   /// Constructs a FlutterDocumentScanSdkWeb
   FlutterDocumentScanSdkWeb();
 
@@ -22,5 +26,45 @@ class FlutterDocumentScanSdkWeb extends FlutterDocumentScanSdkPlatform {
   Future<String?> getPlatformVersion() async {
     final version = html.window.navigator.userAgent;
     return version;
+  }
+
+  /// Initialize the controller.
+  @override
+  Future<int> init(String path, String key) async {
+    return _ddnManager.init(path, key);
+  }
+
+  /// Normalize documents.
+  /// [file] - path to the file.
+  @override
+  Future<void> normalize(String file) async {
+    _ddnManager.normalize(file);
+  }
+
+  /// Document edge detection.
+  /// Returns a [List] of [DocumentResult].
+  @override
+  Future<List<DocumentResult>> detect(String file) async {
+    return _ddnManager.detect(file);
+  }
+
+  /// Save a document.
+  @override
+  Future<void> save(int type, String filename) async {
+    _ddnManager.save(type, filename);
+  }
+
+  /// Set parameters.
+  /// Returns 0 if successful, -1 otherwise.
+  @override
+  Future<int> setParameters(String params) async {
+    return _ddnManager.setParameters(params);
+  }
+
+  /// Get parameters.
+  /// @return a [String] containing the parameters.
+  @override
+  Future<String> getParameters() async {
+    return _ddnManager.getParameters();
   }
 }

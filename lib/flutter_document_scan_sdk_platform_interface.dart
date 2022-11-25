@@ -1,5 +1,6 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
+import 'document_result.dart';
 import 'flutter_document_scan_sdk_method_channel.dart';
 
 abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
@@ -8,7 +9,8 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
 
   static final Object _token = Object();
 
-  static FlutterDocumentScanSdkPlatform _instance = MethodChannelFlutterDocumentScanSdk();
+  static FlutterDocumentScanSdkPlatform _instance =
+      MethodChannelFlutterDocumentScanSdk();
 
   /// The default instance of [FlutterDocumentScanSdkPlatform] to use.
   ///
@@ -25,5 +27,29 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
 
   Future<String?> getPlatformVersion() {
     throw UnimplementedError('platformVersion() has not been implemented.');
+  }
+
+  Future<int> init(String path, String key) {
+    throw UnimplementedError('init() has not been implemented.');
+  }
+
+  Future<void> normalize(String file) {
+    throw UnimplementedError('normalize() has not been implemented.');
+  }
+
+  Future<List<DocumentResult>> detect(String file) {
+    throw UnimplementedError('detect() has not been implemented.');
+  }
+
+  Future<void> save(int type, String filename) {
+    throw UnimplementedError('save() has not been implemented.');
+  }
+
+  Future<int> setParameters(String params) {
+    throw UnimplementedError('setParameters() has not been implemented.');
+  }
+
+  Future<String> getParameters() {
+    throw UnimplementedError('getParameters() has not been implemented.');
   }
 }
