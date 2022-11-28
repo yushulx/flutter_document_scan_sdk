@@ -44,7 +44,7 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
     throw UnimplementedError('detect() has not been implemented.');
   }
 
-  Future<int> save(int type, String filename) {
+  Future<int> save(String filename) {
     throw UnimplementedError('save() has not been implemented.');
   }
 

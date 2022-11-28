@@ -22,8 +22,8 @@ class FlutterDocumentScanSdk {
     return FlutterDocumentScanSdkPlatform.instance.detect(file);
   }
 
-  Future<int> save(int type, String filename) {
-    return FlutterDocumentScanSdkPlatform.instance.save(type, filename);
+  Future<int> save(String filename) {
+    return FlutterDocumentScanSdkPlatform.instance.save(filename);
   }
 
   Future<int> setParameters(String params) {

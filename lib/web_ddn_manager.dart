@@ -20,8 +20,8 @@ class DocumentNormalizer {
   external PromiseJsImpl<dynamic> getRuntimeSettings();
   external static PromiseJsImpl<DocumentNormalizer> createInstance();
   external PromiseJsImpl<void> setRuntimeSettings(dynamic settings);
-  external PromiseJsImpl<dynamic> saveToFile(String filename, bool download);
-  external PromiseJsImpl<dynamic> normalize(dynamic file, dynamic params);
+  external PromiseJsImpl<NormalizedDocument> normalize(
+      dynamic file, dynamic params);
 }
 
 @JS('Image')
@@ -31,9 +31,16 @@ class Image {
   external int get height;
 }
 
+@JS('NormalizedDocument')
+class NormalizedDocument {
+  external PromiseJsImpl<dynamic> saveToFile(String filename, bool download);
+  external dynamic get image;
+}
+
 /// DDNManager class.
 class DDNManager {
   DocumentNormalizer? _normalizer;
+  NormalizedDocument? _normalizedDocument;
 
   /// Configure Dynamsoft Document Normalizer.
   Future<int> init(String path, String key) async {
@@ -68,13 +75,16 @@ class DDNManager {
   Future<NormalizedImage?> normalize(String file, dynamic points) async {
     NormalizedImage? image;
     if (_normalizer != null) {
-      dynamic normalizedImageResult =
+      _normalizedDocument =
           await handleThenable(_normalizer!.normalize(file, points));
-      Image result = normalizedImageResult.image;
-      dynamic data = result.data;
-      Uint8List bytes = Uint8List.fromList(data);
-      image = NormalizedImage(bytes, result.width, result.height);
-      return image;
+
+      if (_normalizedDocument != null) {
+        Image result = _normalizedDocument!.image;
+        dynamic data = result.data;
+        Uint8List bytes = Uint8List.fromList(data);
+        image = NormalizedImage(bytes, result.width, result.height);
+        return image;
+      }
     }
 
     return null;
@@ -92,7 +102,10 @@ class DDNManager {
   }
 
   /// Download images.
-  Future<int> save(int type, String filename) async {
+  Future<int> save(String filename) async {
+    if (_normalizedDocument != null) {
+      await handleThenable(_normalizedDocument!.saveToFile(filename, true));
+    }
     return 0;
   }
 

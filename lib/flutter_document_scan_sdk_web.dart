@@ -52,8 +52,8 @@ class FlutterDocumentScanSdkWeb extends FlutterDocumentScanSdkPlatform {
 
   /// Save a document.
   @override
-  Future<int> save(int type, String filename) async {
-    return _ddnManager.save(type, filename);
+  Future<int> save(String filename) async {
+    return _ddnManager.save(filename);
   }
 
   /// Set parameters.
