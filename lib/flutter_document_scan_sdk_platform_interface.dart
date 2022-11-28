@@ -1,3 +1,6 @@
+import 'dart:ui';
+
+import 'package:flutter_document_scan_sdk/normalized_image.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'document_result.dart';
@@ -33,7 +36,7 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
     throw UnimplementedError('init() has not been implemented.');
   }
 
-  Future<void> normalize(String file) {
+  Future<NormalizedImage?> normalize(String file, dynamic points) {
     throw UnimplementedError('normalize() has not been implemented.');
   }
 
@@ -41,7 +44,7 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
     throw UnimplementedError('detect() has not been implemented.');
   }
 
-  Future<void> save(int type, String filename) {
+  Future<int> save(int type, String filename) {
     throw UnimplementedError('save() has not been implemented.');
   }
 

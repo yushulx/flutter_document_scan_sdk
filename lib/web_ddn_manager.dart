@@ -3,10 +3,13 @@ library dynamsoft;
 
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter_document_scan_sdk/normalized_image.dart';
 import 'package:flutter_document_scan_sdk/shims/dart_ui_real.dart';
 import 'package:js/js.dart';
 import 'document_result.dart';
 import 'utils.dart';
+import 'dart:html' as html;
 
 /// DocumentNormalizer class.
 @JS('DDN.DocumentNormalizer')
@@ -18,6 +21,14 @@ class DocumentNormalizer {
   external static PromiseJsImpl<DocumentNormalizer> createInstance();
   external PromiseJsImpl<void> setRuntimeSettings(dynamic settings);
   external PromiseJsImpl<dynamic> saveToFile(String filename, bool download);
+  external PromiseJsImpl<dynamic> normalize(dynamic file, dynamic params);
+}
+
+@JS('Image')
+class Image {
+  external dynamic get data;
+  external int get width;
+  external int get height;
 }
 
 /// DDNManager class.
@@ -44,7 +55,6 @@ class DDNManager {
   }
 
   Future<String> getParameters() async {
-    print('getParameters $_normalizer');
     if (_normalizer != null) {
       dynamic settings =
           await handleThenable(_normalizer!.getRuntimeSettings());
@@ -55,8 +65,19 @@ class DDNManager {
   }
 
   /// Normalize documents.
-  normalize(String file) {
-    if (_normalizer != null) {}
+  Future<NormalizedImage?> normalize(String file, dynamic points) async {
+    NormalizedImage? image;
+    if (_normalizer != null) {
+      dynamic normalizedImageResult =
+          await handleThenable(_normalizer!.normalize(file, points));
+      Image result = normalizedImageResult.image;
+      dynamic data = result.data;
+      Uint8List bytes = Uint8List.fromList(data);
+      image = NormalizedImage(bytes, result.width, result.height);
+      return image;
+    }
+
+    return null;
   }
 
   /// Document edge detection
@@ -71,7 +92,9 @@ class DDNManager {
   }
 
   /// Download images.
-  save(int type, String filename) {}
+  Future<int> save(int type, String filename) async {
+    return 0;
+  }
 
   /// Convert List<dynamic> to List<Map<dynamic, dynamic>>.
   List<DocumentResult> _resultWrapper(List<dynamic> results) {
@@ -87,7 +110,8 @@ class DDNManager {
         double y = point['y'];
         offsets.add(Offset(x, y));
       }
-      DocumentResult documentResult = DocumentResult(confidence, offsets);
+      DocumentResult documentResult =
+          DocumentResult(confidence, offsets, value['location']);
       output.add(documentResult);
     }
 

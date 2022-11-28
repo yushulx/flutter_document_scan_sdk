@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -6,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_document_scan_sdk/document_result.dart';
 import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk.dart';
 import 'package:flutter_document_scan_sdk/template.dart';
+import 'package:flutter_document_scan_sdk/normalized_image.dart';
 import 'dart:ui' as ui;
 
 void main() {
@@ -49,7 +52,8 @@ class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   final _flutterDocumentScanSdkPlugin = FlutterDocumentScanSdk();
   String file = '';
-  late ui.Image image;
+  ui.Image? image;
+  ui.Image? normalizedUiImage;
   List<DocumentResult> detectionResults = [];
 
   @override
@@ -121,15 +125,19 @@ class _MyAppState extends State<MyApp> {
                 SingleChildScrollView(
                   child: Column(
                     children: [
-                      file == ''
+                      image == null
                           ? Image.asset('images/default.png')
-                          : createCustomImage(image, detectionResults),
+                          : createCustomImage(image!, detectionResults),
                     ],
                   ),
                 ),
                 SingleChildScrollView(
                   child: Column(
-                    children: [Image.asset('images/default.png')],
+                    children: [
+                      normalizedUiImage == null
+                          ? Image.asset('images/default.png')
+                          : createCustomImage(normalizedUiImage!, []),
+                    ],
                   ),
                 ),
               ])),
@@ -157,7 +165,27 @@ class _MyAppState extends State<MyApp> {
                               detectionResults =
                                   await _flutterDocumentScanSdkPlugin
                                       .detect(file);
-                              setState(() {});
+
+                              if (detectionResults.isEmpty) {
+                                print("No document detected");
+                              } else {
+                                print("Document detected");
+                                var normalizedImage =
+                                    await _flutterDocumentScanSdkPlugin
+                                        .normalize(
+                                            file, detectionResults[0].points);
+
+                                decodeImageFromPixels(
+                                    normalizedImage!.data.buffer.asUint8List(),
+                                    normalizedImage.width,
+                                    normalizedImage.height,
+                                    PixelFormat.rgba8888, (ui.Image img) {
+                                  setState(() {
+                                    normalizedUiImage = img;
+                                  });
+                                });
+                              }
+                              // setState(() {});
                             }
                           },
                           child: const Text('Load Document')),
