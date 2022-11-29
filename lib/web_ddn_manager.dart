@@ -24,6 +24,7 @@ class DocumentNormalizer {
       dynamic file, dynamic params);
 }
 
+/// Image class
 @JS('Image')
 class Image {
   external dynamic get data;
@@ -31,6 +32,7 @@ class Image {
   external int get height;
 }
 
+/// NormalizedDocument class
 @JS('NormalizedDocument')
 class NormalizedDocument {
   external PromiseJsImpl<dynamic> saveToFile(String filename, bool download);
@@ -43,6 +45,7 @@ class DDNManager {
   NormalizedDocument? _normalizedDocument;
 
   /// Configure Dynamsoft Document Normalizer.
+  /// Returns 0 if successful.
   Future<int> init(String path, String key) async {
     DocumentNormalizer.engineResourcePath = path;
     DocumentNormalizer.license = key;
@@ -52,6 +55,9 @@ class DDNManager {
     return 0;
   }
 
+  /// Normalize the document.
+  /// [params] are the parameters for the normalization.
+  /// Returns 0 if successful.
   Future<int> setParameters(String params) async {
     if (_normalizer != null) {
       await handleThenable(_normalizer!.setRuntimeSettings(params));
@@ -61,6 +67,7 @@ class DDNManager {
     return -1;
   }
 
+  /// Returns the runtime settings.
   Future<String> getParameters() async {
     if (_normalizer != null) {
       dynamic settings =
@@ -72,6 +79,9 @@ class DDNManager {
   }
 
   /// Normalize documents.
+  /// [file] - path to the file.
+  /// [points] - points of the document.
+  /// Returns a [NormalizedImage].
   Future<NormalizedImage?> normalize(String file, dynamic points) async {
     NormalizedImage? image;
     if (_normalizer != null) {
@@ -91,6 +101,8 @@ class DDNManager {
   }
 
   /// Document edge detection
+  /// [file] - path to the file.
+  /// Returns a [List] of [DocumentResult].
   Future<List<DocumentResult>> detect(String file) async {
     if (_normalizer != null) {
       List<dynamic> results =
@@ -102,6 +114,8 @@ class DDNManager {
   }
 
   /// Download images.
+  /// [filename] - name of the file.
+  /// Returns 0 if successful.
   Future<int> save(String filename) async {
     if (_normalizedDocument != null) {
       await handleThenable(_normalizedDocument!.saveToFile(filename, true));

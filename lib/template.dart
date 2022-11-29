@@ -1,3 +1,4 @@
+/// Template class
 class Template {
   static const String binary = '''
     {

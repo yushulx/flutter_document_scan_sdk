@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter_document_scan_sdk/normalized_image.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
