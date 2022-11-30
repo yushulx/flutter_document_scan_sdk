@@ -125,8 +125,7 @@
         function save() {
             (async () => {
                 if (normalizedImageResult) {
-                    let data = await normalizedImageResult.saveToFile("document-normalization.png", false);
-                    console.log(data);
+                    let data = await normalizedImageResult.saveToFile("document-normalization.png", true);
                 }
             })();
         }

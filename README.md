@@ -28,7 +28,7 @@ The Flutter plugin is a wrapper for Dynamsoft's [Document Normalizer SDK](https:
      ```dart
     final _flutterDocumentScanSdkPlugin = FlutterDocumentScanSdk();
     await _flutterDocumentScanSdkPlugin.init(
-        "https://cdn.jsdelivr.net/npm/dynamsoft-document-normalizer@1.0.10/dist/",
+        "https://cdn.jsdelivr.net/npm/dynamsoft-document-normalizer@1.0.11/dist/",
         "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==");
 
     await _flutterDocumentScanSdkPlugin.setParameters(Template.grayscale);

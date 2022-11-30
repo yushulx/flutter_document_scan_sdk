@@ -83,7 +83,7 @@ class _MyAppState extends State<MyApp> {
     }
 
     int ret = await _flutterDocumentScanSdkPlugin.init(
-        "https://cdn.jsdelivr.net/npm/dynamsoft-document-normalizer@1.0.10/dist/",
+        "https://cdn.jsdelivr.net/npm/dynamsoft-document-normalizer@1.0.11/dist/",
         "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==");
     // String params = await _flutterDocumentScanSdkPlugin.getParameters();
     // print(params);
