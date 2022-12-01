@@ -55,7 +55,7 @@ class _MyAppState extends State<MyApp> {
   ui.Image? image;
   ui.Image? normalizedUiImage;
   NormalizedImage? normalizedImage;
-  List<DocumentResult> detectionResults = [];
+  List<DocumentResult>? detectionResults = [];
   String _pixelFormat = 'grayscale';
 
   @override
@@ -82,7 +82,7 @@ class _MyAppState extends State<MyApp> {
       platformVersion = 'Failed to get platform version.';
     }
 
-    int ret = await _flutterDocumentScanSdkPlugin.init(
+    int? ret = await _flutterDocumentScanSdkPlugin.init(
         "https://cdn.jsdelivr.net/npm/dynamsoft-document-normalizer@1.0.11/dist/",
         "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==");
     // String params = await _flutterDocumentScanSdkPlugin.getParameters();
@@ -114,7 +114,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> normalizeFile(String file, dynamic points) async {
     normalizedImage = await _flutterDocumentScanSdkPlugin.normalize(
-        file, detectionResults[0].points);
+        file, detectionResults![0].points);
     if (normalizedImage != null) {
       decodeImageFromPixels(
           normalizedImage!.data.buffer.asUint8List(),
@@ -145,7 +145,7 @@ class _MyAppState extends State<MyApp> {
                     children: [
                       image == null
                           ? Image.asset('images/default.png')
-                          : createCustomImage(image!, detectionResults),
+                          : createCustomImage(image!, detectionResults!),
                     ],
                   ),
                 ),
@@ -173,8 +173,8 @@ class _MyAppState extends State<MyApp> {
                   await _flutterDocumentScanSdkPlugin
                       .setParameters(Template.binary);
 
-                  if (detectionResults.isNotEmpty) {
-                    await normalizeFile(file, detectionResults[0].points);
+                  if (detectionResults!.isNotEmpty) {
+                    await normalizeFile(file, detectionResults![0].points);
                   }
                 },
               ),
@@ -190,8 +190,8 @@ class _MyAppState extends State<MyApp> {
                   await _flutterDocumentScanSdkPlugin
                       .setParameters(Template.grayscale);
 
-                  if (detectionResults.isNotEmpty) {
-                    await normalizeFile(file, detectionResults[0].points);
+                  if (detectionResults!.isNotEmpty) {
+                    await normalizeFile(file, detectionResults![0].points);
                   }
                 },
               ),
@@ -207,8 +207,8 @@ class _MyAppState extends State<MyApp> {
                   await _flutterDocumentScanSdkPlugin
                       .setParameters(Template.color);
 
-                  if (detectionResults.isNotEmpty) {
-                    await normalizeFile(file, detectionResults[0].points);
+                  if (detectionResults!.isNotEmpty) {
+                    await normalizeFile(file, detectionResults![0].points);
                   }
                 },
               ),
@@ -240,12 +240,13 @@ class _MyAppState extends State<MyApp> {
                                   await _flutterDocumentScanSdkPlugin
                                       .detect(file);
 
-                              if (detectionResults.isEmpty) {
+                              if (detectionResults!.isEmpty) {
                                 print("No document detected");
                               } else {
+                                setState(() {});
                                 print("Document detected");
                                 await normalizeFile(
-                                    file, detectionResults[0].points);
+                                    file, detectionResults![0].points);
                               }
                             }
                           },

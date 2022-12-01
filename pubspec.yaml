@@ -45,8 +45,8 @@ flutter:
       #   pluginClass: FlutterDocumentScanSdkPlugin
       # linux:
       #   pluginClass: FlutterDocumentScanSdkPlugin
-      # windows:
-      #   pluginClass: FlutterDocumentScanSdkPluginCApi
+      windows:
+        pluginClass: FlutterDocumentScanSdkPluginCApi
       web:
         pluginClass: FlutterDocumentScanSdkWeb
         fileName: flutter_document_scan_sdk_web.dart
