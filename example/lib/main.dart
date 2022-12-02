@@ -10,6 +10,7 @@ import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk.dart';
 import 'package:flutter_document_scan_sdk/template.dart';
 import 'package:flutter_document_scan_sdk/normalized_image.dart';
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() {
   runApp(const MyApp());
@@ -239,7 +240,7 @@ class _MyAppState extends State<MyApp> {
                               detectionResults =
                                   await _flutterDocumentScanSdkPlugin
                                       .detect(file);
-
+                              setState(() {});
                               if (detectionResults!.isEmpty) {
                                 print("No document detected");
                               } else {
@@ -255,27 +256,47 @@ class _MyAppState extends State<MyApp> {
                           textColor: Colors.white,
                           color: Colors.blue,
                           onPressed: () async {
-                            await _flutterDocumentScanSdkPlugin
-                                .save('normalized.png');
+                            const String fileName = 'normalized.png';
 
-                            const String fileName = 'normalized.webp';
-                            final String? path =
-                                await getSavePath(suggestedName: fileName);
-                            if (path == null) {
-                              // Operation was canceled by the user.
-                              return;
-                            }
+                            if (kIsWeb) {
+                              await _flutterDocumentScanSdkPlugin
+                                  .save(fileName);
 
-                            if (normalizedUiImage != null) {
-                              const String mimeType = 'image/webp';
-                              ByteData? data = await normalizedUiImage!
-                                  .toByteData(format: ui.ImageByteFormat.png);
-                              if (data != null) {
-                                final XFile imageFile = XFile.fromData(
-                                  data.buffer.asUint8List(),
-                                  mimeType: mimeType,
-                                );
-                                await imageFile.saveTo(path);
+                              String path = 'normalized.webp';
+
+                              if (normalizedUiImage != null) {
+                                const String mimeType = 'image/webp';
+                                ByteData? data = await normalizedUiImage!
+                                    .toByteData(format: ui.ImageByteFormat.png);
+                                if (data != null) {
+                                  final XFile imageFile = XFile.fromData(
+                                    data.buffer.asUint8List(),
+                                    mimeType: mimeType,
+                                  );
+                                  await imageFile.saveTo(path);
+                                }
+                              }
+                            } else {
+                              String? path =
+                                  await getSavePath(suggestedName: fileName);
+
+                              path ??= fileName;
+
+                              await _flutterDocumentScanSdkPlugin.save(path);
+
+                              path = '${path.split('.png')[0]}.webp';
+
+                              if (normalizedUiImage != null) {
+                                const String mimeType = 'image/webp';
+                                ByteData? data = await normalizedUiImage!
+                                    .toByteData(format: ui.ImageByteFormat.png);
+                                if (data != null) {
+                                  final XFile imageFile = XFile.fromData(
+                                    data.buffer.asUint8List(),
+                                    mimeType: mimeType,
+                                  );
+                                  await imageFile.saveTo(path);
+                                }
                               }
                             }
                           },

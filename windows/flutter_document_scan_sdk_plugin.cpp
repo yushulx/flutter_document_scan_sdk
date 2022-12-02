@@ -153,6 +153,7 @@ namespace flutter_document_scan_sdk
     {
       std::string filename;
       EncodableMap results;
+      int x1 = 0, y1 = 0, x2 = 0, y2 = 0, x3 = 0, y3 = 0, x4 = 0, y4 = 0;
 
       if (arguments)
       {
@@ -162,7 +163,54 @@ namespace flutter_document_scan_sdk
           filename = std::get<std::string>(filename_it->second);
         }
 
-        int x1 = 0, y1 = 0, x2 = 0, y2 = 0, x3 = 0, y3 = 0, x4 = 0, y4 = 0;
+        auto x1_it = arguments->find(EncodableValue("x1"));
+        if (x1_it != arguments->end())
+        {
+          x1 = std::get<int>(x1_it->second);
+        }
+
+        auto y1_it = arguments->find(EncodableValue("y1"));
+        if (y1_it != arguments->end())
+        {
+          y1 = std::get<int>(y1_it->second);
+        }
+
+        auto x2_it = arguments->find(EncodableValue("x2"));
+        if (x2_it != arguments->end())
+        {
+          x2 = std::get<int>(x2_it->second);
+        }
+
+        auto y2_it = arguments->find(EncodableValue("y2"));
+        if (y2_it != arguments->end())
+        {
+          y2 = std::get<int>(y2_it->second);
+        }
+
+        auto x3_it = arguments->find(EncodableValue("x3"));
+        if (x3_it != arguments->end())
+        {
+          x3 = std::get<int>(x3_it->second);
+        }
+
+        auto y3_it = arguments->find(EncodableValue("y3"));
+        if (y3_it != arguments->end())
+        {
+          y3 = std::get<int>(y3_it->second);
+        }
+
+        auto x4_it = arguments->find(EncodableValue("x4"));
+        if (x4_it != arguments->end())
+        {
+          x4 = std::get<int>(x4_it->second);
+        }
+
+        auto y4_it = arguments->find(EncodableValue("y4"));
+        if (y4_it != arguments->end())
+        {
+          y4 = std::get<int>(y4_it->second);
+        }
+
         results = manager->Normalize(filename.c_str(), x1, y1, x2, y2, x3, y3, x4, y4);
       }
 
