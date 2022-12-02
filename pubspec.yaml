@@ -43,8 +43,8 @@ flutter:
       #   pluginClass: FlutterDocumentScanSdkPlugin
       # ios:
       #   pluginClass: FlutterDocumentScanSdkPlugin
-      # linux:
-      #   pluginClass: FlutterDocumentScanSdkPlugin
+      linux:
+        pluginClass: FlutterDocumentScanSdkPlugin
       windows:
         pluginClass: FlutterDocumentScanSdkPluginCApi
       web:

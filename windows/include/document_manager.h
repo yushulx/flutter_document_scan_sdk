@@ -263,16 +263,15 @@ public:
 
     EncodableValue GetParameters()
     {
-        EncodableValue out;
         if (normalizer == NULL)
-            return out;
+            return EncodableValue("");
 
         char *content = NULL;
         DDN_OutputRuntimeSettingsToString(normalizer, "", &content);
         EncodableValue params = EncodableValue((const char *)content);
         if (content != NULL)
             DDN_FreeString(&content);
-        return out;
+        return params;
     }
 
     int Save(const char *filename)
