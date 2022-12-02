@@ -7,6 +7,7 @@ The Flutter plugin is a wrapper for Dynamsoft's [Document Normalizer SDK](https:
 ## Supported Platforms
 - Web
 - Windows
+- Linux
 
 ## Installation
 Add `flutter_document_scan_sdk` as a dependency in your `pubspec.yaml` file.
