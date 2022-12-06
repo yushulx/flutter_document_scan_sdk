@@ -170,10 +170,10 @@ public:
                     for (int j = 0; j < width; j++)
                     {
                         int index = i * width + j;                  
-                        rgba[index * 4] = 255;                      // alpha
-                        rgba[index * 4 + 1] = data[dataIndex + 2];  // red
-                        rgba[index * 4 + 2] = data[dataIndex + 1];  // green
-                        rgba[index * 4 + 3] = data[dataIndex];      // blue
+                        rgba[index * 4] = data[dataIndex + 1];      // green
+                        rgba[index * 4 + 1] = data[dataIndex];      // blue
+                        rgba[index * 4 + 2] = 255;                  // alpha
+                        rgba[index * 4 + 3] = data[dataIndex + 2];  // red    
                         dataIndex += 3;
                     }
                 }
@@ -186,9 +186,9 @@ public:
                     for (int j = 0; j < width; j++)
                     {
                         int index = i * width + j;
-                        rgba[index * 4] = 255;
+                        rgba[index * 4] = data[dataIndex];
                         rgba[index * 4 + 1] = data[dataIndex];
-                        rgba[index * 4 + 2] = data[dataIndex];
+                        rgba[index * 4 + 2] = 255;
                         rgba[index * 4 + 3] = data[dataIndex];
                         dataIndex += 1;
                     }
@@ -204,9 +204,9 @@ public:
                     for (int j = 0; j < width; j++)
                     {
                         int index = i * width + j;
-                        rgba[index * 4] = 255;
+                        rgba[index * 4] = grayscale[dataIndex];
                         rgba[index * 4 + 1] = grayscale[dataIndex];
-                        rgba[index * 4 + 2] = grayscale[dataIndex];
+                        rgba[index * 4 + 2] = 255;
                         rgba[index * 4 + 3] = grayscale[dataIndex];
                         dataIndex += 1;
                     }
