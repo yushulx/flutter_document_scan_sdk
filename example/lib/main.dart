@@ -138,28 +138,30 @@ class _MyAppState extends State<MyApp> {
         ),
         body: Stack(children: <Widget>[
           Center(
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
+            child: GridView.count(
+              padding: const EdgeInsets.all(30.0),
+              crossAxisSpacing: 10.0,
+              mainAxisSpacing: 10.0,
+              crossAxisCount: 2,
+              children: <Widget>[
                 SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      image == null
-                          ? Image.asset('images/default.png')
-                          : createCustomImage(image!, detectionResults!),
-                    ],
-                  ),
-                ),
+                    child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: image == null
+                      ? Image.asset('images/default.png')
+                      : createCustomImage(image!, detectionResults!),
+                )),
                 SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      normalizedUiImage == null
-                          ? Image.asset('images/default.png')
-                          : createCustomImage(normalizedUiImage!, []),
-                    ],
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: normalizedUiImage == null
+                        ? Image.asset('images/default.png')
+                        : createCustomImage(normalizedUiImage!, []),
                   ),
-                ),
-              ])),
+                )
+              ],
+            ),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -219,7 +221,7 @@ class _MyAppState extends State<MyApp> {
           Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Container(
+              SizedBox(
                 height: 100,
                 child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
