@@ -28,6 +28,7 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
   g_autoptr(FlMethodResponse) response = nullptr;
 
   const gchar *method = fl_method_call_get_name(method_call);
+  FlValue* args = fl_method_call_get_args(method_call);
 
   if (strcmp(method, "getPlatformVersion") == 0)
   {
@@ -51,7 +52,7 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     }
     const char *license = fl_value_get_string(value);
 
-    ret = DocumentManager::SetLicense(license);
+    int ret = DocumentManager::SetLicense(license);
     g_autoptr(FlValue) result = fl_value_new_int(ret);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }
@@ -91,7 +92,7 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
       return;
     }
     const char *filename = fl_value_get_string(value);
-    int ret = manager->Save(filename);
+    int ret = self->manager->Save(filename);
 
     g_autoptr(FlValue) result = fl_value_new_int(ret);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
@@ -183,7 +184,7 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     }
     int y4 = fl_value_get_int(value);
 
-    g_autoptr(FlValue) result = self->manager->normalize(filename, x1, y1, x2, y2, x3, y3, x4, y4);
+    g_autoptr(FlValue) result = self->manager->Normalize(filename, x1, y1, x2, y2, x3, y3, x4, y4);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }
   else
@@ -209,6 +210,7 @@ static void flutter_document_scan_sdk_plugin_class_init(FlutterDocumentScanSdkPl
 static void flutter_document_scan_sdk_plugin_init(FlutterDocumentScanSdkPlugin *self)
 {
   self->manager = new DocumentManager();
+  self->manager->Init();
 }
 
 static void method_call_cb(FlMethodChannel *channel, FlMethodCall *method_call,

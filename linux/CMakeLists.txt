@@ -44,6 +44,8 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE PkgConfig::GTK)
 # This list could contain prebuilt libraries, or libraries created by an
 # external build triggered from this build file.
 set(flutter_document_scan_sdk_bundled_libraries
-  "${PROJECT_SOURCE_DIR}/lib/"
+  
   PARENT_SCOPE
+
+  # "${PROJECT_SOURCE_DIR}/lib/"
 )
