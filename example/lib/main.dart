@@ -117,14 +117,11 @@ class _MyAppState extends State<MyApp> {
     normalizedImage = await _flutterDocumentScanSdkPlugin.normalize(
         file, detectionResults![0].points);
     if (normalizedImage != null) {
-      decodeImageFromPixels(
-          normalizedImage!.data.buffer.asUint8List(),
-          normalizedImage!.width,
-          normalizedImage!.height,
-          PixelFormat.rgba8888, (ui.Image img) {
-        setState(() {
-          normalizedUiImage = img;
-        });
+
+      decodeImageFromPixels(normalizedImage!.data, normalizedImage!.width,
+          normalizedImage!.height, PixelFormat.rgba8888, (ui.Image img) {
+        normalizedUiImage = img;
+        setState(() {});
       });
     }
   }

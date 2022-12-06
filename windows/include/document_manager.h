@@ -148,12 +148,12 @@ public:
         {
             ImageData *imageData = imageResult->image;
             int width = imageData->width;
-			int height = imageData->height;
-			int stride = imageData->stride;
-			int format = (int)imageData->format;
-			unsigned char* data = imageData->bytes;
-			int orientation = imageData->orientation;
-			int length = imageData->bytesLength;
+            int height = imageData->height;
+            int stride = imageData->stride;
+            int format = (int)imageData->format;
+            unsigned char *data = imageData->bytes;
+            int orientation = imageData->orientation;
+            int length = imageData->bytesLength;
 
             map[EncodableValue("width")] = EncodableValue(width);
             map[EncodableValue("height")] = EncodableValue(height);
@@ -171,11 +171,12 @@ public:
                 {
                     for (int j = 0; j < width; j++)
                     {
-                        int index = i * width + j;                  
-                        rgba[index * 4] = 255;                      // alpha
-                        rgba[index * 4 + 1] = data[dataIndex + 2];  // red
-                        rgba[index * 4 + 2] = data[dataIndex + 1];  // green
-                        rgba[index * 4 + 3] = data[dataIndex];      // blue
+                        int index = i * width + j;
+
+                        rgba[index * 4] = data[dataIndex + 2];     // red
+                        rgba[index * 4 + 1] = data[dataIndex + 1]; // green
+                        rgba[index * 4 + 2] = data[dataIndex];     // blue
+                        rgba[index * 4 + 3] = 255;                 // blue
                         dataIndex += 3;
                     }
                 }
@@ -188,35 +189,35 @@ public:
                     for (int j = 0; j < width; j++)
                     {
                         int index = i * width + j;
-                        rgba[index * 4] = 255;
+                        rgba[index * 4] = data[dataIndex];
                         rgba[index * 4 + 1] = data[dataIndex];
                         rgba[index * 4 + 2] = data[dataIndex];
-                        rgba[index * 4 + 3] = data[dataIndex];
+                        rgba[index * 4 + 3] = 255;
                         dataIndex += 1;
                     }
                 }
             }
-            else if (format == IPF_BINARY) {
+            else if (format == IPF_BINARY)
+            {
                 unsigned char *grayscale = new unsigned char[width * height];
                 binary2grayscale(data, grayscale, width, height, stride, length);
-                
+
                 int dataIndex = 0;
                 for (int i = 0; i < height; i++)
                 {
                     for (int j = 0; j < width; j++)
                     {
                         int index = i * width + j;
-                        rgba[index * 4] = 255;
+                        rgba[index * 4] = grayscale[dataIndex];
                         rgba[index * 4 + 1] = grayscale[dataIndex];
                         rgba[index * 4 + 2] = grayscale[dataIndex];
-                        rgba[index * 4 + 3] = grayscale[dataIndex];
+                        rgba[index * 4 + 3] = 255;
                         dataIndex += 1;
                     }
                 }
 
                 free(grayscale);
             }
-
 
             std::vector<uint8_t> rawBytes(rgba, rgba + width * height * 4);
             map[EncodableValue("data")] = rawBytes;
@@ -227,7 +228,7 @@ public:
         return map;
     }
 
-    void binary2grayscale(unsigned char* data, unsigned char* output, int width, int height, int stride, int length) 
+    void binary2grayscale(unsigned char *data, unsigned char *output, int width, int height, int stride, int length)
     {
         int index = 0;
 
@@ -243,7 +244,8 @@ public:
             {
                 int tmp = (b & (1 << byteCount)) >> byteCount;
 
-                if (shift < stride * 8 * n - skip) {
+                if (shift < stride * 8 * n - skip)
+                {
                     if (tmp == 1)
                         output[index] = 255;
                     else
@@ -255,7 +257,8 @@ public:
                 shift += 1;
             }
 
-            if (shift == stride * 8 * n) {
+            if (shift == stride * 8 * n)
+            {
                 n += 1;
             }
         }
