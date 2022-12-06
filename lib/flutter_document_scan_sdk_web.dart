@@ -31,7 +31,7 @@ class FlutterDocumentScanSdkWeb extends FlutterDocumentScanSdkPlatform {
 
   /// Initialize the controller.
   @override
-  Future<int> init(String path, String key) async {
+  Future<int?> init(String path, String key) async {
     return _ddnManager.init(path, key);
   }
 
@@ -45,27 +45,27 @@ class FlutterDocumentScanSdkWeb extends FlutterDocumentScanSdkPlatform {
   /// Document edge detection.
   /// Returns a [List] of [DocumentResult].
   @override
-  Future<List<DocumentResult>> detect(String file) async {
+  Future<List<DocumentResult>?> detect(String file) async {
     return _ddnManager.detect(file);
   }
 
   /// Save a document.
   @override
-  Future<int> save(String filename) async {
+  Future<int?> save(String filename) async {
     return _ddnManager.save(filename);
   }
 
   /// Set parameters.
   /// Returns 0 if successful, -1 otherwise.
   @override
-  Future<int> setParameters(String params) async {
+  Future<int?> setParameters(String params) async {
     return _ddnManager.setParameters(params);
   }
 
   /// Get parameters.
   /// @return a [String] containing the parameters.
   @override
-  Future<String> getParameters() async {
+  Future<String?> getParameters() async {
     return _ddnManager.getParameters();
   }
 }

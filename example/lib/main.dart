@@ -10,6 +10,7 @@ import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk.dart';
 import 'package:flutter_document_scan_sdk/template.dart';
 import 'package:flutter_document_scan_sdk/normalized_image.dart';
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() {
   runApp(const MyApp());
@@ -55,7 +56,7 @@ class _MyAppState extends State<MyApp> {
   ui.Image? image;
   ui.Image? normalizedUiImage;
   NormalizedImage? normalizedImage;
-  List<DocumentResult> detectionResults = [];
+  List<DocumentResult>? detectionResults = [];
   String _pixelFormat = 'grayscale';
 
   @override
@@ -82,11 +83,11 @@ class _MyAppState extends State<MyApp> {
       platformVersion = 'Failed to get platform version.';
     }
 
-    int ret = await _flutterDocumentScanSdkPlugin.init(
+    int? ret = await _flutterDocumentScanSdkPlugin.init(
         "https://cdn.jsdelivr.net/npm/dynamsoft-document-normalizer@1.0.11/dist/",
         "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==");
-    // String params = await _flutterDocumentScanSdkPlugin.getParameters();
-    // print(params);
+    String? params = await _flutterDocumentScanSdkPlugin.getParameters();
+    print(params);
 
     ret = await _flutterDocumentScanSdkPlugin.setParameters(Template.grayscale);
     if (ret != 0) {
@@ -114,16 +115,13 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> normalizeFile(String file, dynamic points) async {
     normalizedImage = await _flutterDocumentScanSdkPlugin.normalize(
-        file, detectionResults[0].points);
+        file, detectionResults![0].points);
     if (normalizedImage != null) {
-      decodeImageFromPixels(
-          normalizedImage!.data.buffer.asUint8List(),
-          normalizedImage!.width,
-          normalizedImage!.height,
-          PixelFormat.rgba8888, (ui.Image img) {
-        setState(() {
-          normalizedUiImage = img;
-        });
+
+      decodeImageFromPixels(normalizedImage!.data, normalizedImage!.width,
+          normalizedImage!.height, PixelFormat.rgba8888, (ui.Image img) {
+        normalizedUiImage = img;
+        setState(() {});
       });
     }
   }
@@ -137,28 +135,30 @@ class _MyAppState extends State<MyApp> {
         ),
         body: Stack(children: <Widget>[
           Center(
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
+            child: GridView.count(
+              padding: const EdgeInsets.all(30.0),
+              crossAxisSpacing: 10.0,
+              mainAxisSpacing: 10.0,
+              crossAxisCount: 2,
+              children: <Widget>[
                 SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      image == null
-                          ? Image.asset('images/default.png')
-                          : createCustomImage(image!, detectionResults),
-                    ],
-                  ),
-                ),
+                    child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: image == null
+                      ? Image.asset('images/default.png')
+                      : createCustomImage(image!, detectionResults!),
+                )),
                 SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      normalizedUiImage == null
-                          ? Image.asset('images/default.png')
-                          : createCustomImage(normalizedUiImage!, []),
-                    ],
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: normalizedUiImage == null
+                        ? Image.asset('images/default.png')
+                        : createCustomImage(normalizedUiImage!, []),
                   ),
-                ),
-              ])),
+                )
+              ],
+            ),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -173,8 +173,8 @@ class _MyAppState extends State<MyApp> {
                   await _flutterDocumentScanSdkPlugin
                       .setParameters(Template.binary);
 
-                  if (detectionResults.isNotEmpty) {
-                    await normalizeFile(file, detectionResults[0].points);
+                  if (detectionResults!.isNotEmpty) {
+                    await normalizeFile(file, detectionResults![0].points);
                   }
                 },
               ),
@@ -190,8 +190,8 @@ class _MyAppState extends State<MyApp> {
                   await _flutterDocumentScanSdkPlugin
                       .setParameters(Template.grayscale);
 
-                  if (detectionResults.isNotEmpty) {
-                    await normalizeFile(file, detectionResults[0].points);
+                  if (detectionResults!.isNotEmpty) {
+                    await normalizeFile(file, detectionResults![0].points);
                   }
                 },
               ),
@@ -207,8 +207,8 @@ class _MyAppState extends State<MyApp> {
                   await _flutterDocumentScanSdkPlugin
                       .setParameters(Template.color);
 
-                  if (detectionResults.isNotEmpty) {
-                    await normalizeFile(file, detectionResults[0].points);
+                  if (detectionResults!.isNotEmpty) {
+                    await normalizeFile(file, detectionResults![0].points);
                   }
                 },
               ),
@@ -218,7 +218,7 @@ class _MyAppState extends State<MyApp> {
           Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Container(
+              SizedBox(
                 height: 100,
                 child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -239,13 +239,14 @@ class _MyAppState extends State<MyApp> {
                               detectionResults =
                                   await _flutterDocumentScanSdkPlugin
                                       .detect(file);
-
-                              if (detectionResults.isEmpty) {
+                              setState(() {});
+                              if (detectionResults!.isEmpty) {
                                 print("No document detected");
                               } else {
+                                setState(() {});
                                 print("Document detected");
                                 await normalizeFile(
-                                    file, detectionResults[0].points);
+                                    file, detectionResults![0].points);
                               }
                             }
                           },
@@ -254,27 +255,47 @@ class _MyAppState extends State<MyApp> {
                           textColor: Colors.white,
                           color: Colors.blue,
                           onPressed: () async {
-                            await _flutterDocumentScanSdkPlugin
-                                .save('normalized.png');
+                            const String fileName = 'normalized.png';
 
-                            const String fileName = 'normalized.webp';
-                            final String? path =
-                                await getSavePath(suggestedName: fileName);
-                            if (path == null) {
-                              // Operation was canceled by the user.
-                              return;
-                            }
+                            if (kIsWeb) {
+                              await _flutterDocumentScanSdkPlugin
+                                  .save(fileName);
 
-                            if (normalizedUiImage != null) {
-                              const String mimeType = 'image/webp';
-                              ByteData? data = await normalizedUiImage!
-                                  .toByteData(format: ui.ImageByteFormat.png);
-                              if (data != null) {
-                                final XFile imageFile = XFile.fromData(
-                                  data.buffer.asUint8List(),
-                                  mimeType: mimeType,
-                                );
-                                await imageFile.saveTo(path);
+                              String path = 'normalized.webp';
+
+                              if (normalizedUiImage != null) {
+                                const String mimeType = 'image/webp';
+                                ByteData? data = await normalizedUiImage!
+                                    .toByteData(format: ui.ImageByteFormat.png);
+                                if (data != null) {
+                                  final XFile imageFile = XFile.fromData(
+                                    data.buffer.asUint8List(),
+                                    mimeType: mimeType,
+                                  );
+                                  await imageFile.saveTo(path);
+                                }
+                              }
+                            } else {
+                              String? path =
+                                  await getSavePath(suggestedName: fileName);
+
+                              path ??= fileName;
+
+                              await _flutterDocumentScanSdkPlugin.save(path);
+
+                              path = '${path.split('.png')[0]}.webp';
+
+                              if (normalizedUiImage != null) {
+                                const String mimeType = 'image/webp';
+                                ByteData? data = await normalizedUiImage!
+                                    .toByteData(format: ui.ImageByteFormat.png);
+                                if (data != null) {
+                                  final XFile imageFile = XFile.fromData(
+                                    data.buffer.asUint8List(),
+                                    mimeType: mimeType,
+                                  );
+                                  await imageFile.saveTo(path);
+                                }
                               }
                             }
                           },

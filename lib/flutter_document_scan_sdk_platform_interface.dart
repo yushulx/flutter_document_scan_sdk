@@ -30,7 +30,7 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
 
-  Future<int> init(String path, String key) {
+  Future<int?> init(String path, String key) {
     throw UnimplementedError('init() has not been implemented.');
   }
 
@@ -38,19 +38,19 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
     throw UnimplementedError('normalize() has not been implemented.');
   }
 
-  Future<List<DocumentResult>> detect(String file) {
+  Future<List<DocumentResult>?> detect(String file) {
     throw UnimplementedError('detect() has not been implemented.');
   }
 
-  Future<int> save(String filename) {
+  Future<int?> save(String filename) {
     throw UnimplementedError('save() has not been implemented.');
   }
 
-  Future<int> setParameters(String params) {
+  Future<int?> setParameters(String params) {
     throw UnimplementedError('setParameters() has not been implemented.');
   }
 
-  Future<String> getParameters() {
+  Future<String?> getParameters() {
     throw UnimplementedError('getParameters() has not been implemented.');
   }
 }

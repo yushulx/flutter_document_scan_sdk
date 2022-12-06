@@ -9,7 +9,6 @@ import 'package:flutter_document_scan_sdk/shims/dart_ui_real.dart';
 import 'package:js/js.dart';
 import 'document_result.dart';
 import 'utils.dart';
-import 'dart:html' as html;
 
 /// DocumentNormalizer class.
 @JS('DDN.DocumentNormalizer')

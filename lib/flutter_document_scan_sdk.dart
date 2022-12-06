@@ -9,7 +9,7 @@ class FlutterDocumentScanSdk {
   }
 
   /// Initialize the SDK
-  Future<int> init(String path, String key) {
+  Future<int?> init(String path, String key) {
     return FlutterDocumentScanSdkPlatform.instance.init(path, key);
   }
 
@@ -19,22 +19,22 @@ class FlutterDocumentScanSdk {
   }
 
   /// Detects documents in the given image file.
-  Future<List<DocumentResult>> detect(String file) {
+  Future<List<DocumentResult>?> detect(String file) {
     return FlutterDocumentScanSdkPlatform.instance.detect(file);
   }
 
   /// Save the current image to the given filename.
-  Future<int> save(String filename) {
+  Future<int?> save(String filename) {
     return FlutterDocumentScanSdkPlatform.instance.save(filename);
   }
 
   /// Set parameters for the document scanner
-  Future<int> setParameters(String params) {
+  Future<int?> setParameters(String params) {
     return FlutterDocumentScanSdkPlatform.instance.setParameters(params);
   }
 
   /// Get the current parameters as a JSON string
-  Future<String> getParameters() {
+  Future<String?> getParameters() {
     return FlutterDocumentScanSdkPlatform.instance.getParameters();
   }
 }
