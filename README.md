@@ -1,7 +1,7 @@
 # flutter_document_scan_sdk
 The Flutter plugin is a wrapper for Dynamsoft's [Document Normalizer SDK](https://www.dynamsoft.com/document-normalizer/docs/introduction/). It enables you to build document edge detection and normalization applications for Windows, Linux and web.
 
-## Try the Example
+## Try Document Rectification Example
 
 ### Desktop
 
@@ -40,6 +40,8 @@ flutter run -d chrome
 - Web
 - Windows
 - Linux
+- Android
+- iOS
 
 ## Installation
 Add `flutter_document_scan_sdk` as a dependency in your `pubspec.yaml` file.
