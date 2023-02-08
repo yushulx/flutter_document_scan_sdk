@@ -13,6 +13,8 @@ import 'package:flutter_document_scan_sdk/normalized_image.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -146,31 +148,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  _showMyDialog(String path) {
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Save'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[Text('The image is saved to: $path')],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -273,16 +250,18 @@ class _MyHomePageState extends State<MyHomePage> {
                           color: Colors.blue,
                           onPressed: () async {
                             XFile? pickedFile;
-                            if (Platform.isAndroid || Platform.isIOS) {
-                              pickedFile = await picker.pickImage(
-                                  source: ImageSource.camera);
-                            } else {
+                            if (kIsWeb ||
+                                Platform.isWindows ||
+                                Platform.isLinux) {
                               const XTypeGroup typeGroup = XTypeGroup(
                                 label: 'images',
                                 extensions: <String>['jpg', 'png'],
                               );
                               pickedFile = await openFile(
                                   acceptedTypeGroups: <XTypeGroup>[typeGroup]);
+                            } else if (Platform.isAndroid || Platform.isIOS) {
+                              pickedFile = await picker.pickImage(
+                                  source: ImageSource.camera);
                             }
 
                             if (pickedFile != null) {
@@ -307,52 +286,57 @@ class _MyHomePageState extends State<MyHomePage> {
                           textColor: Colors.white,
                           color: Colors.blue,
                           onPressed: () async {
-                            const String fileName = 'normalized.png';
-
+                            String fileName =
+                                '${DateTime.now().millisecondsSinceEpoch}.png';
+                            String? path;
                             if (kIsWeb) {
-                              await _flutterDocumentScanSdkPlugin
-                                  .save(fileName);
-
-                              String path = 'normalized.webp';
-
-                              if (normalizedUiImage != null) {
-                                const String mimeType = 'image/webp';
-                                ByteData? data = await normalizedUiImage!
-                                    .toByteData(format: ui.ImageByteFormat.png);
-                                if (data != null) {
-                                  final XFile imageFile = XFile.fromData(
-                                    data.buffer.asUint8List(),
-                                    mimeType: mimeType,
-                                  );
-                                  await imageFile.saveTo(path);
-                                  _showMyDialog(path);
-                                }
-                              }
+                              path = fileName;
                             } else if (Platform.isAndroid || Platform.isIOS) {
+                              Directory directory =
+                                  await getApplicationDocumentsDirectory();
+                              path = join(directory.path, fileName);
                             } else {
-                              String? path =
-                                  await getSavePath(suggestedName: fileName);
-
+                              path = await getSavePath(suggestedName: fileName);
                               path ??= fileName;
-
-                              await _flutterDocumentScanSdkPlugin.save(path);
-
-                              path = '${path.split('.png')[0]}.webp';
-
-                              if (normalizedUiImage != null) {
-                                const String mimeType = 'image/webp';
-                                ByteData? data = await normalizedUiImage!
-                                    .toByteData(format: ui.ImageByteFormat.png);
-                                if (data != null) {
-                                  final XFile imageFile = XFile.fromData(
-                                    data.buffer.asUint8List(),
-                                    mimeType: mimeType,
-                                  );
-                                  await imageFile.saveTo(path);
-                                  _showMyDialog(path);
-                                }
-                              }
                             }
+
+                            await _flutterDocumentScanSdkPlugin.save(path);
+                            showDialog<void>(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Save'),
+                                  content: SingleChildScrollView(
+                                    child: ListBody(
+                                      children: <Widget>[
+                                        Text('The image is saved to: $path')
+                                      ],
+                                    ),
+                                  ),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      child: const Text('OK'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                            // if (normalizedUiImage != null) {
+                            //   const String mimeType = 'image/png';
+                            //   ByteData? data = await normalizedUiImage!
+                            //       .toByteData(format: ui.ImageByteFormat.png);
+                            //   if (data != null) {
+                            //     final XFile imageFile = XFile.fromData(
+                            //       data.buffer.asUint8List(),
+                            //       mimeType: mimeType,
+                            //     );
+                            //     await imageFile.saveTo(path);
+                            //   }
+                            // }
                           },
                           child: const Text("Save Document"))
                     ]),
