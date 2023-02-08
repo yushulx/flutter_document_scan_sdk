@@ -18,11 +18,29 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  // This widget is the root of your application.
   @override
-  State<MyApp> createState() => _MyAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class ImagePainter extends CustomPainter {
@@ -51,7 +69,7 @@ class ImagePainter extends CustomPainter {
       image != oldDelegate.image || results != oldDelegate.results;
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyHomePageState extends State<MyHomePage> {
   String _platformVersion = 'Unknown';
   final _flutterDocumentScanSdkPlugin = FlutterDocumentScanSdk();
   String file = '';
@@ -126,6 +144,31 @@ class _MyAppState extends State<MyApp> {
         setState(() {});
       });
     }
+  }
+
+  _showMyDialog(String path) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Save'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[Text('The image is saved to: $path')],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -282,8 +325,10 @@ class _MyAppState extends State<MyApp> {
                                     mimeType: mimeType,
                                   );
                                   await imageFile.saveTo(path);
+                                  _showMyDialog(path);
                                 }
                               }
+                            } else if (Platform.isAndroid || Platform.isIOS) {
                             } else {
                               String? path =
                                   await getSavePath(suggestedName: fileName);
@@ -304,6 +349,7 @@ class _MyAppState extends State<MyApp> {
                                     mimeType: mimeType,
                                   );
                                   await imageFile.saveTo(path);
+                                  _showMyDialog(path);
                                 }
                               }
                             }
