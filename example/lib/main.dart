@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:file_selector/file_selector.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_document_scan_sdk/template.dart';
 import 'package:flutter_document_scan_sdk/normalized_image.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:image_picker/image_picker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -58,6 +60,7 @@ class _MyAppState extends State<MyApp> {
   NormalizedImage? normalizedImage;
   List<DocumentResult>? detectionResults = [];
   String _pixelFormat = 'grayscale';
+  final picker = ImagePicker();
 
   @override
   void initState() {
@@ -117,7 +120,6 @@ class _MyAppState extends State<MyApp> {
     normalizedImage = await _flutterDocumentScanSdkPlugin.normalize(
         file, detectionResults![0].points);
     if (normalizedImage != null) {
-
       decodeImageFromPixels(normalizedImage!.data, normalizedImage!.width,
           normalizedImage!.height, PixelFormat.rgba8888, (ui.Image img) {
         normalizedUiImage = img;
@@ -227,12 +229,19 @@ class _MyAppState extends State<MyApp> {
                           textColor: Colors.white,
                           color: Colors.blue,
                           onPressed: () async {
-                            const XTypeGroup typeGroup = XTypeGroup(
-                              label: 'images',
-                              extensions: <String>['jpg', 'png'],
-                            );
-                            final XFile? pickedFile = await openFile(
-                                acceptedTypeGroups: <XTypeGroup>[typeGroup]);
+                            XFile? pickedFile;
+                            if (Platform.isAndroid || Platform.isIOS) {
+                              pickedFile = await picker.pickImage(
+                                  source: ImageSource.camera);
+                            } else {
+                              const XTypeGroup typeGroup = XTypeGroup(
+                                label: 'images',
+                                extensions: <String>['jpg', 'png'],
+                              );
+                              pickedFile = await openFile(
+                                  acceptedTypeGroups: <XTypeGroup>[typeGroup]);
+                            }
+
                             if (pickedFile != null) {
                               image = await loadImage(pickedFile);
                               file = pickedFile.path;
