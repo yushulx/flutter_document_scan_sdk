@@ -27,33 +27,33 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             result(0)
         case "getParameters":
             let parameters: String = ""
-            if self.recognizer == nil {
+            if self.normalizer == nil {
                 result(.none)
                 return
             }
             
             result(parameters)
         case "detect":
-            if recognizer == nil {
+            if normalizer == nil {
                 result(.none)
                 return
             }
 
             DispatchQueue.global().async {
                 // let filename: String = arguments.value(forKey: "filename") as! String
-                // let res = try? self.recognizer!.recognizeFile(filename)
+                // let res = try? self.normalizer!.recognizeFile(filename)
                 // result(self.wrapResults(results: res))
                 result(.none)
             }
         case "normalize":
-            if self.recognizer == nil {
+            if self.normalizer == nil {
                 result(.none)
                 return
             }
 
             result(.none)
         case "save":
-            if self.recognizer == nil {
+            if self.normalizer == nil {
                 result(0)
                 return
             }
