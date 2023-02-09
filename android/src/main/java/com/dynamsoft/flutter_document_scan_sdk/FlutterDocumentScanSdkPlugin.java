@@ -197,64 +197,7 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
             map.put("length", length);
 
             byte[] rgba = new byte[width * height * 4];
-            
-            // switch (format) {
-            //   case EnumImagePixelFormat.IPF_RGB_888:
-            //   {
-            //     int dataIndex = 0;
-            //     for (int i = 0; i < height; i++)
-            //     {
-            //         for (int j = 0; j < width; j++)
-            //         {
-            //             int index = i * width + j;
-  
-            //             rgba[index * 4] = data[dataIndex + 2];     // red
-            //             rgba[index * 4 + 1] = data[dataIndex + 1]; // green
-            //             rgba[index * 4 + 2] = data[dataIndex];     // blue
-            //             rgba[index * 4 + 3] = (byte)255;                 // alpha
-            //             dataIndex += 3;
-            //         }
-            //     }
-            //   }
-            //   break;
-            //   case EnumImagePixelFormat.IPF_GRAYSCALED:
-            //   {
-            //     int dataIndex = 0;
-            //     for (int i = 0; i < height; i++)
-            //     {
-            //         for (int j = 0; j < width; j++)
-            //         {
-            //             int index = i * width + j;
-            //             rgba[index * 4] = data[dataIndex];
-            //             rgba[index * 4 + 1] = data[dataIndex];
-            //             rgba[index * 4 + 2] = data[dataIndex];
-            //             rgba[index * 4 + 3] = (byte)255;
-            //             dataIndex += 1;
-            //         }
-            //     }
-            //   }
-            //   break;
-            //   case EnumImagePixelFormat.IPF_BINARY:
-            //   {
-            //     byte[] grayscale = new byte[width * height];
-            //     binary2grayscale(data, grayscale, width, height, stride, length);
-  
-            //     int dataIndex = 0;
-            //     for (int i = 0; i < height; i++)
-            //     {
-            //         for (int j = 0; j < width; j++)
-            //         {
-            //             int index = i * width + j;
-            //             rgba[index * 4] = grayscale[dataIndex];
-            //             rgba[index * 4 + 1] = grayscale[dataIndex];
-            //             rgba[index * 4 + 2] = grayscale[dataIndex];
-            //             rgba[index * 4 + 3] = (byte)255;
-            //             dataIndex += 1;
-            //         }
-            //     }
-            //   }
-            //   break;
-            // }
+    
             if (format == EnumImagePixelFormat.IPF_RGB_888) {
               int dataIndex = 0;
               for (int i = 0; i < height; i++)
