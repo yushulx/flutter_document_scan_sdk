@@ -6,6 +6,7 @@ import DynamsoftDocumentNormalizer
 public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, LicenseVerificationListener {
   var completionHandlers: [FlutterResult] = []
   private var normalizer: DynamsoftDocumentNormalizer?
+  private var normalizedImage: iNormalizedImageResult?
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_document_scan_sdk", binaryMessenger: registrar.messenger())
@@ -14,6 +15,11 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    if call.arguments == nil {
+        result(.none)
+        return
+    }
+
     let arguments: NSDictionary = call.arguments as! NSDictionary
     switch call.method {
         case "getPlatformVersion":
@@ -24,14 +30,19 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             DynamsoftLicenseManager.initLicense(license, verificationDelegate: self)
         case "setParameters":
             let params: String = arguments.value(forKey: "params") as! String
-            result(0)
+            let isSuccess = try? normalizer.initRuntimeSettingsFromString(params)
+            if isSuccess! {
+                result(0)
+            } else {
+                result(-1)
+            }
         case "getParameters":
             let parameters: String = ""
             if self.normalizer == nil {
                 result(.none)
                 return
             }
-            
+            parameters = try? normalizer.outputRuntimeSettings("")
             result(parameters)
         case "detect":
             if normalizer == nil {
@@ -40,10 +51,31 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             }
 
             DispatchQueue.global().async {
-                // let filename: String = arguments.value(forKey: "filename") as! String
-                // let res = try? self.normalizer!.recognizeFile(filename)
-                // result(self.wrapResults(results: res))
-                result(.none)
+                let out = NSMutableArray()
+                let filename: String = arguments.value(forKey: "file") as! String
+                let detectedResults = try? normalizer.detectQuadFromFile(filename)
+
+                if detectedResults != nil {
+                    for result in detectedResults! {
+                        let dictionary = NSMutableDictionary()
+
+                        let confidence = result.confidenceAsDocumentBoundary
+                        let points = result.location!.points as! [CGPoint]
+
+                        dictionary.setObject(confidence, forKey: "confidence" as NSCopying)
+                        dictionary.setObject(Int(points[0].x), forKey: "x1" as NSCopying)
+                        dictionary.setObject(Int(points[0].y), forKey: "y1" as NSCopying)
+                        dictionary.setObject(Int(points[1].x), forKey: "x2" as NSCopying)
+                        dictionary.setObject(Int(points[1].y), forKey: "y2" as NSCopying)
+                        dictionary.setObject(Int(points[2].x), forKey: "x3" as NSCopying)
+                        dictionary.setObject(Int(points[2].y), forKey: "y3" as NSCopying)
+                        dictionary.setObject(Int(points[3].x), forKey: "x4" as NSCopying)
+                        dictionary.setObject(Int(points[3].y), forKey: "y4" as NSCopying)
+
+                        out.add(dictionary)
+                    }
+                }
+                result(out)
             }
         case "normalize":
             if self.normalizer == nil {
@@ -53,12 +85,19 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
 
             result(.none)
         case "save":
-            if self.normalizer == nil {
-                result(0)
+            if normalizedImage == nil {
+                result(-1)
                 return
             }
 
-            result(0)
+            let filename: String = arguments.value(forKey: "filename") as! String
+            let isSuccess = try? normalizedImage.saveToFile(filename)
+
+            if isSuccess! {
+                result(0)
+            } else {
+                result(-1)
+            }
         default:
             result(.none)
         }
