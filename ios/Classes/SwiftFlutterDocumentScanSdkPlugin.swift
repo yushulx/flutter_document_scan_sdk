@@ -83,7 +83,100 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
                 return
             }
             
-            result(.none)
+            let arguments: NSDictionary = call.arguments as! NSDictionary
+            
+            let filename: String = arguments.value(forKey: "file") as! String
+            let x1: Int = arguments.value(forKey: "x1") as! Int
+            let y1: Int = arguments.value(forKey: "y1") as! Int
+            let x2: Int = arguments.value(forKey: "x2") as! Int
+            let y2: Int = arguments.value(forKey: "y2") as! Int
+            let x3: Int = arguments.value(forKey: "x3") as! Int
+            let y3: Int = arguments.value(forKey: "y3") as! Int
+            let x4: Int = arguments.value(forKey: "x4") as! Int
+            let y4: Int = arguments.value(forKey: "y4") as! Int
+            
+            let points = [CGPoint(x: x1, y: y1), CGPoint(x: x2, y: y2), CGPoint(x: x3, y: y3), CGPoint(x: x4, y: y4)]
+            let quad = iQuadrilateral()
+            quad.points = points
+            
+            DispatchQueue.global().async {
+                self.normalizedImage = try? self.normalizer!.normalizeFile(filename, quad: quad)
+                
+                let dictionary = NSMutableDictionary()
+                
+                if self.normalizedImage != nil {
+                    let imageData: iImageData = self.normalizedImage!.image
+                    let width = imageData.width
+                    let height = imageData.height
+                    let stride = imageData.stride
+                    let format = imageData.format
+                    let data = imageData.bytes
+                    let length = data!.count;
+                    let orientation = imageData.orientation;
+                    
+                    dictionary.setObject(width, forKey: "width" as NSCopying)
+                    dictionary.setObject(height, forKey: "height" as NSCopying)
+//                    dictionary.setObject(stride, forKey: "stride" as NSCopying)
+//                    dictionary.setObject(format, forKey: "format" as NSCopying)
+//                    dictionary.setObject(orientation, forKey: "orientation" as NSCopying)
+//                    dictionary.setObject(length, forKey: "length" as NSCopying)
+                    
+                    var rgba: [UInt8] = [UInt8](repeating: 0, count: width * height * 4)
+                    
+                    if format == EnumImagePixelFormat.RGB_888 {
+                        var dataIndex = 0
+                        for i in 0..<height {
+                            for j in 0..<width {
+                                let index = i * width + j
+                                rgba[index * 4] = data![dataIndex + 2]     // red
+                                rgba[index * 4 + 1] = data![dataIndex + 1] // green
+                                rgba[index * 4 + 2] = data![dataIndex]     // blue
+                                rgba[index * 4 + 3] = 255                 // alpha
+                                dataIndex += 3;
+                            }
+                        }
+                    }
+                    else if (format == EnumImagePixelFormat.grayScaled) {
+                        var dataIndex = 0;
+                        for i in 0..<height {
+                            for j in 0..<width {
+                                let index = i * width + j;
+                                rgba[index * 4] = data![dataIndex];
+                                rgba[index * 4 + 1] = data![dataIndex];
+                                rgba[index * 4 + 2] = data![dataIndex];
+                                rgba[index * 4 + 3] = 255;
+                                dataIndex += 1;
+                            }
+                        }
+                    }
+//                    else if (format == EnumImagePixelFormat.IPF_BINARY) {
+//                        byte[] grayscale = new byte[width * height];
+//                        binary2grayscale(data, grayscale, width, height, stride, length);
+//
+//                        int dataIndex = 0;
+//                        for (int i = 0; i < height; i++)
+//                        {
+//                            for (int j = 0; j < width; j++)
+//                            {
+//                                int index = i * width + j;
+//                                rgba[index * 4] = grayscale[dataIndex];
+//                                rgba[index * 4 + 1] = grayscale[dataIndex];
+//                                rgba[index * 4 + 2] = grayscale[dataIndex];
+//                                rgba[index * 4 + 3] = (byte)255;
+//                                dataIndex += 1;
+//                            }
+//                        }
+//                    }
+                    dictionary.setObject(rgba, forKey: "data" as NSCopying);
+                    result(dictionary)
+                }
+                else {
+                    result(.none)
+                }
+                
+                 
+            }
+            
         case "save":
             if self.normalizedImage == nil {
                 result(-1)

@@ -114,8 +114,18 @@ class MethodChannelFlutterDocumentScanSdk
     );
 
     if (result != null) {
+      var data = result['data'];
+
+      if (data is List) {
+        return NormalizedImage(
+          Uint8List.fromList(data.cast<int>()),
+          result['width'],
+          result['height'],
+        );
+      }
+
       return NormalizedImage(
-        result['data'],
+        data,
         result['width'],
         result['height'],
       );
