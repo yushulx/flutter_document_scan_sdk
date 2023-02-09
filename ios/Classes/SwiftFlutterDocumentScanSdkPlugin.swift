@@ -30,7 +30,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             DynamsoftLicenseManager.initLicense(license, verificationDelegate: self)
         case "setParameters":
             let params: String = arguments.value(forKey: "params") as! String
-            let isSuccess = try? normalizer.initRuntimeSettingsFromString(params)
+            let isSuccess = try? self.normalizer.initRuntimeSettingsFromString(params)
             if isSuccess! {
                 result(0)
             } else {
@@ -45,7 +45,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             parameters = try? normalizer.outputRuntimeSettings("")
             result(parameters)
         case "detect":
-            if normalizer == nil {
+            if self.normalizer == nil {
                 result(.none)
                 return
             }
@@ -53,7 +53,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             DispatchQueue.global().async {
                 let out = NSMutableArray()
                 let filename: String = arguments.value(forKey: "file") as! String
-                let detectedResults = try? normalizer.detectQuadFromFile(filename)
+                let detectedResults = try? self.normalizer.detectQuadFromFile(filename)
 
                 if detectedResults != nil {
                     for result in detectedResults! {
@@ -85,13 +85,13 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
 
             result(.none)
         case "save":
-            if normalizedImage == nil {
+            if self.normalizedImage == nil {
                 result(-1)
                 return
             }
 
             let filename: String = arguments.value(forKey: "filename") as! String
-            let isSuccess = try? normalizedImage.saveToFile(filename)
+            let isSuccess = try? self.normalizedImage.saveToFile(filename)
 
             if isSuccess! {
                 result(0)
