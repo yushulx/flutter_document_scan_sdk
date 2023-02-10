@@ -1,9 +1,9 @@
 # flutter_document_scan_sdk
-The Flutter plugin is a wrapper for Dynamsoft's [Document Normalizer SDK](https://www.dynamsoft.com/document-normalizer/docs/introduction/). It enables you to build document edge detection and normalization applications for Windows, Linux and web.
+The Flutter plugin is a wrapper for Dynamsoft's [Document Normalizer SDK](https://www.dynamsoft.com/document-normalizer/docs/introduction/). It enables you to build document rectification applications for **Windows**, **Linux**, **web**, **Android** and **iOS**.
 
-## Try the Example
+## Try Document Rectification Example
 
-### Desktop
+### Desktop: Windows & Linux
 
 
 **Windows** 
@@ -33,6 +33,15 @@ flutter run -d chrome
 
 ![Flutter web document edge detection and normalization](https://www.dynamsoft.com/codepool/img/2022/11/flutter-document-edge-detection-normalization.png)
 
+### Mobile: Android & iOS
+
+```bash
+cd example
+flutter run 
+```
+
+![Flutter document rectification for Android and iOS](https://www.dynamsoft.com/codepool/img/2023/02/flutter-document-rectification-android-ios.jpg)
+
 ## Getting a License Key for Dynamsoft Document Normalizer
 [![](https://img.shields.io/badge/Get-30--day%20FREE%20Trial-blue)](https://www.dynamsoft.com/customer/license/trialLicense/?product=ddn)
 
@@ -40,6 +49,8 @@ flutter run -d chrome
 - Web
 - Windows
 - Linux
+- Android
+- iOS
 
 ## Installation
 Add `flutter_document_scan_sdk` as a dependency in your `pubspec.yaml` file.
@@ -57,9 +68,18 @@ Include the JavaScript library of Dynamsoft Document Normalizer in your `index.h
 <script src="https://cdn.jsdelivr.net/npm/dynamsoft-document-normalizer@1.0.11/dist/ddn.js"></script>
 ```
 
+## API Compatibility
+| Methods      | Android |    iOS | Windows | Linux | macOS | Web|
+| ----------- | ----------- | ----------- | ----------- |----------- |----------- |----------- |
+| `Future<int?> init(String path, String key)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:      | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:    |
+| `Future<List<DocumentResult>?> detect(String file)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:     |:heavy_check_mark:      |
+| `Future<NormalizedImage?> normalize(String file, dynamic points)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:     |:heavy_check_mark:    |
+| `Future<int?> save(String filename)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | :heavy_check_mark:     |
+| `Future<int?> setParameters(String params)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | :heavy_check_mark:     |
+| `Future<String?> getParameters()`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | :heavy_check_mark:     |
 
 ## Usage
-- Initialize the document normalizer SDK with resource path and license key. The resource path is only required for **web apps**:
+- Initialize the document rectification SDK with resource path and license key. The resource path is only required for **web apps**:
 
      ```dart
     final _flutterDocumentScanSdkPlugin = FlutterDocumentScanSdk();
@@ -77,7 +97,7 @@ Include the JavaScript library of Dynamsoft Document Normalizer in your `index.h
             await _flutterDocumentScanSdkPlugin
                 .detect(file);
     ```
-- Normalize the document based on returned coordinates of document corners:
+- Rectify the document based on document corners:
 
     ```dart
     NormalizedImage? normalizedImage = await _flutterDocumentScanSdkPlugin.normalize(
