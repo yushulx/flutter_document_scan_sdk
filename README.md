@@ -69,14 +69,15 @@ Include the JavaScript library of Dynamsoft Document Normalizer in your `index.h
 ```
 
 ## API Compatibility
-| Methods      | Android |    iOS | Windows | Linux | macOS | Web|
-| ----------- | ----------- | ----------- | ----------- |----------- |----------- |----------- |
-| `Future<int?> init(String path, String key)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:      | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:    |
-| `Future<List<DocumentResult>?> detect(String file)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:     |:heavy_check_mark:      |
-| `Future<NormalizedImage?> normalize(String file, dynamic points)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:     |:heavy_check_mark:    |
-| `Future<int?> save(String filename)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | :heavy_check_mark:     |
-| `Future<int?> setParameters(String params)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | :heavy_check_mark:     |
-| `Future<String?> getParameters()`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | :heavy_check_mark:     |
+| Methods      | Android |    iOS | Windows | Linux | Web|
+| ----------- | ----------- | ----------- | ----------- |----------- |----------- |
+| `Future<int?> init(String path, String key)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:      | :heavy_check_mark:      |:heavy_check_mark:      | 
+| `Future<List<DocumentResult>?> detectFile(String file)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:     |
+| `Future<NormalizedImage?> normalize(String file, dynamic points)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:     |
+| `Future<int?> save(String filename)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | 
+| `Future<int?> setParameters(String params)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | 
+| `Future<String?> getParameters()`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | 
+| `Future<List<DocumentResult>?> detectBuffer(Uint8List bytes, int width, int height, int stride, int format)`     | :heavy_cross_mark:      | :heavy_cross_mark:   | :heavy_check_mark:      |:heavy_cross_mark:      | :heavy_cross_mark:     |
 
 ## Usage
 - Initialize the document rectification SDK with resource path and license key. The resource path is only required for **web apps**:
@@ -95,7 +96,7 @@ Include the JavaScript library of Dynamsoft Document Normalizer in your `index.h
     ```dart
     List<DocumentResult>? detectionResults =
             await _flutterDocumentScanSdkPlugin
-                .detect(file);
+                .detectFile(file);
     ```
 - Rectify the document based on document corners:
 

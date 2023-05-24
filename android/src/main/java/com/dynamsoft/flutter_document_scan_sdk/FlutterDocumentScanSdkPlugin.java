@@ -118,7 +118,7 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
         result.success(parameters);
         break;
       }
-      case "detect": {
+      case "detectFile": {
         final String filename = call.argument("file");
         List<Map<String, Object>> out = new ArrayList<>();
         try {

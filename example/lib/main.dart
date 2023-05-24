@@ -3,10 +3,12 @@ import 'dart:ui';
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 
 import 'package:flutter_document_scan_sdk/document_result.dart';
 import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk.dart';
+import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk_platform_interface.dart';
 import 'package:flutter_document_scan_sdk/template.dart';
 import 'package:flutter_document_scan_sdk/normalized_image.dart';
 import 'dart:ui' as ui;
@@ -390,11 +392,28 @@ class _MyHomePageState extends State<MyHomePage> {
                             }
 
                             if (pickedFile != null) {
-                              image = await loadImage(pickedFile);
                               file = pickedFile.path;
+
+                              image = await loadImage(pickedFile);
+                              if (image == null) {
+                                print("loadImage failed");
+                                return;
+                              }
+                              // ByteData? byteData = await image!.toByteData(
+                              //     format: ui.ImageByteFormat.rawRgba);
+                              // detectionResults =
+                              //     await _flutterDocumentScanSdkPlugin
+                              //         .detectBuffer(
+                              //             byteData!.buffer.asUint8List(),
+                              //             image!.width,
+                              //             image!.height,
+                              //             byteData.lengthInBytes ~/
+                              //                 image!.height,
+                              //             ImagePixelFormat.IPF_ARGB_8888.index);
+
                               detectionResults =
                                   await _flutterDocumentScanSdkPlugin
-                                      .detect(file);
+                                      .detectFile(file);
                               setState(() {});
                               if (detectionResults!.isEmpty) {
                                 print("No document detected");

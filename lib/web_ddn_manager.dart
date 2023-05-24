@@ -110,7 +110,7 @@ class DDNManager {
   /// Document edge detection
   /// [file] - path to the file.
   /// Returns a [List] of [DocumentResult].
-  Future<List<DocumentResult>> detect(String file) async {
+  Future<List<DocumentResult>> detectFile(String file) async {
     if (_normalizer != null) {
       List<dynamic> results =
           await handleThenable(_normalizer!.detectQuad(file));

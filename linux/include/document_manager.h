@@ -69,7 +69,7 @@ public:
         return ret;
     }
 
-    FlValue* Detect(const char *filename)
+    FlValue* DetectFile(const char *filename)
     {
         FlValue* out = fl_value_new_list();
         if (normalizer == NULL)

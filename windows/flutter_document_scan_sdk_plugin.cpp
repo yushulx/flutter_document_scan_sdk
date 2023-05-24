@@ -131,7 +131,7 @@ namespace flutter_document_scan_sdk
 
       result->Success(EncodableValue(ret));
     }
-    else if (method_call.method_name().compare("detect") == 0)
+    else if (method_call.method_name().compare("detectFile") == 0)
     {
       std::string filename;
       EncodableList results;
@@ -144,10 +144,50 @@ namespace flutter_document_scan_sdk
           filename = std::get<std::string>(filename_it->second);
         }
 
-        results = manager->Detect(filename.c_str());
+        results = manager->DetectFile(filename.c_str());
       }
 
       result->Success(results);
+    }
+    else if (method_call.method_name().compare("detectBuffer") == 0)
+    {
+      std::vector<unsigned char> bytes;
+      EncodableList results;
+      int width = 0, height = 0, stride = 0, format = 0;
+
+      if (arguments)
+      {
+        auto bytes_it = arguments->find(EncodableValue("bytes"));
+        if (bytes_it != arguments->end())
+        {
+          bytes = std::get<vector<unsigned char>>(bytes_it->second);
+        }
+
+        auto width_it = arguments->find(EncodableValue("width"));
+        if (width_it != arguments->end())
+        {
+          width = std::get<int>(width_it->second);
+        }
+
+        auto height_it = arguments->find(EncodableValue("height"));
+        if (height_it != arguments->end())
+        {
+          height = std::get<int>(height_it->second);
+        }
+
+        auto stride_it = arguments->find(EncodableValue("stride"));
+        if (stride_it != arguments->end())
+        {
+          stride = std::get<int>(stride_it->second);
+        }
+
+        auto format_it = arguments->find(EncodableValue("format"));
+        if (format_it != arguments->end())
+        {
+          format = std::get<int>(format_it->second);
+        }
+        manager->DetectBuffer(result, reinterpret_cast<unsigned char*>(bytes.data()), width, height, stride, format);
+      }
     }
     else if (method_call.method_name().compare("normalize") == 0)
     {

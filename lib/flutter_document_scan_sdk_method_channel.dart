@@ -43,9 +43,9 @@ class MethodChannelFlutterDocumentScanSdk
   /// [file] - path to the file.
   /// Returns a [List] of [DocumentResult].
   @override
-  Future<List<DocumentResult>> detect(String file) async {
+  Future<List<DocumentResult>> detectFile(String file) async {
     List? results = await methodChannel.invokeListMethod<dynamic>(
-      'detect',
+      'detectFile',
       {'file': file},
     );
 
