@@ -31,7 +31,7 @@ cd example
 flutter run -d chrome
 ```
 
-![Flutter web document edge detection and normalization](https://www.dynamsoft.com/codepool/img/2022/11/flutter-document-edge-detection-normalization.png)
+![Flutter web document edge detection and normalization](https://www.dynamsoft.com/codepool/img/2023/05/document-edge-edit.png)
 
 ### Mobile: Android & iOS
 
@@ -65,7 +65,7 @@ dependencies:
 Include the JavaScript library of Dynamsoft Document Normalizer in your `index.html` file:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/dynamsoft-document-normalizer@1.0.11/dist/ddn.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dynamsoft-document-normalizer@1.0.12/dist/ddn.js"></script>
 ```
 
 ## API Compatibility

@@ -5,7 +5,6 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:flutter_document_scan_sdk/document_result.dart';
 import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk.dart';
 import 'package:flutter_document_scan_sdk/template.dart';
@@ -64,6 +63,16 @@ class _DocumentPageState extends State<DocumentPage> {
     await normalizeFile(widget.file, widget.detectionResults[0].points);
   }
 
+  Widget createCustomImage(
+      ui.Image image, List<DocumentResult> detectionResults) {
+    return SizedBox(
+        width: image.width.toDouble(),
+        height: image.height.toDouble(),
+        child: CustomPaint(
+          painter: ImagePainter(image, detectionResults),
+        ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,9 +122,9 @@ class _DocumentPageState extends State<DocumentPage> {
                   await _flutterDocumentScanSdkPlugin
                       .setParameters(Template.grayscale);
 
-                  if (widget.detectionResults!.isNotEmpty) {
+                  if (widget.detectionResults.isNotEmpty) {
                     await normalizeFile(
-                        widget.file, widget.detectionResults![0].points);
+                        widget.file, widget.detectionResults[0].points);
                   }
                 },
               ),
@@ -131,9 +140,9 @@ class _DocumentPageState extends State<DocumentPage> {
                   await _flutterDocumentScanSdkPlugin
                       .setParameters(Template.color);
 
-                  if (widget.detectionResults!.isNotEmpty) {
+                  if (widget.detectionResults.isNotEmpty) {
                     await normalizeFile(
-                        widget.file, widget.detectionResults![0].points);
+                        widget.file, widget.detectionResults[0].points);
                   }
                 },
               ),
@@ -215,8 +224,8 @@ class _DocumentPageState extends State<DocumentPage> {
   }
 
   Future<void> normalizeFile(String file, dynamic points) async {
-    normalizedImage = await _flutterDocumentScanSdkPlugin.normalize(
-        file, widget.detectionResults[0].points);
+    normalizedImage =
+        await _flutterDocumentScanSdkPlugin.normalize(file, points);
     if (normalizedImage != null) {
       decodeImageFromPixels(normalizedImage!.data, normalizedImage!.width,
           normalizedImage!.height, PixelFormat.rgba8888, (ui.Image img) {
@@ -244,32 +253,31 @@ class ImagePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.red
-      ..strokeWidth = 5
+      ..color = Colors.blue
+      ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 
     canvas.drawImage(image, Offset.zero, paint);
+
+    Paint circlePaint = Paint()
+      ..color = Colors.red
+      ..style = PaintingStyle.fill;
+
     for (var result in results) {
       canvas.drawLine(result.points[0], result.points[1], paint);
       canvas.drawLine(result.points[1], result.points[2], paint);
       canvas.drawLine(result.points[2], result.points[3], paint);
       canvas.drawLine(result.points[3], result.points[0], paint);
+
+      canvas.drawCircle(result.points[0], 10, circlePaint);
+      canvas.drawCircle(result.points[1], 10, circlePaint);
+      canvas.drawCircle(result.points[2], 10, circlePaint);
+      canvas.drawCircle(result.points[3], 10, circlePaint);
     }
   }
 
   @override
-  bool shouldRepaint(ImagePainter oldDelegate) =>
-      image != oldDelegate.image || results != oldDelegate.results;
-}
-
-Widget createCustomImage(ui.Image image, List<DocumentResult> results) {
-  return SizedBox(
-    width: image.width.toDouble(),
-    height: image.height.toDouble(),
-    child: CustomPaint(
-      painter: ImagePainter(image, results),
-    ),
-  );
+  bool shouldRepaint(ImagePainter oldDelegate) => true;
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -302,6 +310,36 @@ class _MyHomePageState extends State<MyHomePage> {
     if (ret != 0) {
       print("setParameters failed");
     }
+  }
+
+  Widget createCustomImage(ui.Image image, List<DocumentResult> results) {
+    return SizedBox(
+        width: image.width.toDouble(),
+        height: image.height.toDouble(),
+        child: GestureDetector(
+          onPanUpdate: (details) {
+            if (details.localPosition.dx < 0 ||
+                details.localPosition.dy < 0 ||
+                details.localPosition.dx > image.width ||
+                details.localPosition.dy > image.height) {
+              return;
+            }
+
+            setState(() {
+              for (int i = 0; i < results.length; i++) {
+                for (int j = 0; j < results[i].points.length; j++) {
+                  if ((results[i].points[j] - details.localPosition).distance <
+                      20) {
+                    results[i].points[j] = details.localPosition;
+                  }
+                }
+              }
+            });
+          },
+          child: CustomPaint(
+            painter: ImagePainter(image, results),
+          ),
+        ));
   }
 
   @override

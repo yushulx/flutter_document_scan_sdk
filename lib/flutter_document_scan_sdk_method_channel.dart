@@ -40,12 +40,37 @@ class MethodChannelFlutterDocumentScanSdk
   }
 
   /// Document edge detection.
+  /// [file] - path to the file.
   /// Returns a [List] of [DocumentResult].
   @override
   Future<List<DocumentResult>> detect(String file) async {
     List? results = await methodChannel.invokeListMethod<dynamic>(
       'detect',
       {'file': file},
+    );
+
+    return _resultWrapper(results);
+  }
+
+  /// Document edge detection.
+  /// [bytes] - bytes of the image.
+  /// [width] - width of the image.
+  /// [height] - height of the image.
+  /// [stride] - stride of the image.
+  /// [format] - format of the image.
+  /// Returns a [List] of [DocumentResult].
+  @override
+  Future<List<DocumentResult>> detectBuffer(
+      Uint8List bytes, int width, int height, int stride, int format) async {
+    List? results = await methodChannel.invokeListMethod<dynamic>(
+      'detectBuffer',
+      {
+        'bytes': bytes,
+        'width': width,
+        'height': height,
+        'stride': stride,
+        'format': format
+      },
     );
 
     return _resultWrapper(results);

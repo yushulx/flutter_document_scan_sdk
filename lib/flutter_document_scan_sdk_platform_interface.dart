@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_document_scan_sdk/normalized_image.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -52,5 +53,10 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
 
   Future<String?> getParameters() {
     throw UnimplementedError('getParameters() has not been implemented.');
+  }
+
+  Future<List<DocumentResult>> detectBuffer(
+      Uint8List bytes, int width, int height, int stride, int format) {
+    throw UnimplementedError('detectBuffer() has not been implemented.');
   }
 }

@@ -1,3 +1,8 @@
+## 0.4.0
+- Updated example code to support quadrilateral editing.
+- Updated DDNJS to 1.0.12.
+- Fixed JS normalize function based on quadrilateral points.
+
 ## 0.3.0
 * Supported Android and iOS.
 

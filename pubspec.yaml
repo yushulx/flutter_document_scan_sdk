@@ -1,6 +1,6 @@
 name: flutter_document_scan_sdk
 description: A Flutter wrapper for Dynamsoft Document Normalizer, providing API for document edge detection and document rectification.
-version: 0.3.0
+version: 0.4.0
 homepage: https://www.dynamsoft.com/document-normalizer/docs/introduction/
 repository: https://github.com/yushulx/flutter_document_scan_sdk
 

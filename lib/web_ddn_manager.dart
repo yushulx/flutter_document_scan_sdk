@@ -82,10 +82,18 @@ class DDNManager {
   /// [points] - points of the document.
   /// Returns a [NormalizedImage].
   Future<NormalizedImage?> normalize(String file, dynamic points) async {
+    List<dynamic> jsOffsets = points.map((Offset offset) {
+      return {'x': offset.dx, 'y': offset.dy};
+    }).toList();
+
+    dynamic jsonObj = jsonEncode({
+      "quad": {"points": jsOffsets}
+    });
+
     NormalizedImage? image;
     if (_normalizer != null) {
       _normalizedDocument =
-          await handleThenable(_normalizer!.normalize(file, points));
+          await handleThenable(_normalizer!.normalize(file, parse(jsonObj)));
 
       if (_normalizedDocument != null) {
         Image result = _normalizedDocument!.image;
