@@ -181,7 +181,7 @@ public:
         return WrapResults(pResults);
     }
 
-    FlValue* DetectBuffer(const unsigned char * buffer, int width, int height, int stride, int format)
+    FlValue* DetectBuffer(unsigned char * buffer, int width, int height, int stride, int format)
     {
         FlValue* out = fl_value_new_list();
         if (normalizer == NULL)
