@@ -114,7 +114,7 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     g_autoptr(FlValue) result = self->manager->detectFile(filename);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }
-  else if (strcmp(method, "normalize") == 0)
+  else if (strcmp(method, "normalizeFile") == 0)
   {
     if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP)
     {
@@ -184,7 +184,7 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     }
     int y4 = fl_value_get_int(value);
 
-    g_autoptr(FlValue) result = self->manager->Normalize(filename, x1, y1, x2, y2, x3, y3, x4, y4);
+    g_autoptr(FlValue) result = self->manager->NormalizeFile(filename, x1, y1, x2, y2, x3, y3, x4, y4);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }
   else

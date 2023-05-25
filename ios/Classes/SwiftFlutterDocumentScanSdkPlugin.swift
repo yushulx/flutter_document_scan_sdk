@@ -77,7 +77,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
                 }
                 result(out)
             }
-        case "normalize":
+        case "normalizeFile":
             if self.normalizer == nil {
                 result(.none)
                 return

@@ -154,7 +154,7 @@ public:
         lk.unlock();
     }
 
-    static void processBuffer(DocumentManager *self, unsigned char * buffer, int width, int height, int stride, int format)
+    ImagePixelFormat getPixelFormat(int format)
     {
         ImagePixelFormat pixelFormat = IPF_BGR_888;
         switch(format) {
@@ -199,12 +199,19 @@ public:
                 break;
         }
 
+        return pixelFormat;
+    }
+
+    static void processBuffer(DocumentManager *self, unsigned char * buffer, int width, int height, int stride, int format)
+    {
+        
+
         ImageData data;
         data.bytes = buffer;
         data.width = width;
         data.height = height;
         data.stride = stride;
-        data.format = pixelFormat;
+        data.format = self->getPixelFormat(format);
         data.bytesLength = stride * height;
 
         DetectedQuadResultArray *pResults = NULL;
@@ -295,24 +302,9 @@ public:
         return WrapResults(pResults);
     }
 
-    EncodableMap Normalize(const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    EncodableMap createNormalizedImage()
     {
-        FreeImage();
         EncodableMap map;
-
-        Quadrilateral quad;
-        quad.points[0].coordinate[0] = x1;
-        quad.points[0].coordinate[1] = y1;
-        quad.points[1].coordinate[0] = x2;
-        quad.points[1].coordinate[1] = y2;
-        quad.points[2].coordinate[0] = x3;
-        quad.points[2].coordinate[1] = y3;
-        quad.points[3].coordinate[0] = x4;
-        quad.points[3].coordinate[1] = y4;
-
-        int errorCode = DDN_NormalizeFile(normalizer, filename, "", &quad, &imageResult);
-        if (errorCode != DM_OK)
-            printf("%s\r\n", DC_GetErrorString(errorCode));
 
         if (imageResult)
         {
@@ -396,6 +388,56 @@ public:
         }
 
         return map;
+    }
+
+    EncodableMap NormalizeFile(const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    {
+        FreeImage();
+
+        Quadrilateral quad;
+        quad.points[0].coordinate[0] = x1;
+        quad.points[0].coordinate[1] = y1;
+        quad.points[1].coordinate[0] = x2;
+        quad.points[1].coordinate[1] = y2;
+        quad.points[2].coordinate[0] = x3;
+        quad.points[2].coordinate[1] = y3;
+        quad.points[3].coordinate[0] = x4;
+        quad.points[3].coordinate[1] = y4;
+
+        int errorCode = DDN_NormalizeFile(normalizer, filename, "", &quad, &imageResult);
+        if (errorCode != DM_OK)
+            printf("%s\r\n", DC_GetErrorString(errorCode));
+
+        return createNormalizedImage();
+    }
+
+    EncodableMap NormalizeBuffer(const unsigned char * buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    {
+        FreeImage();
+
+        ImageData data;
+        data.bytes = (unsigned char *)buffer;
+        data.width = width;
+        data.height = height;
+        data.stride = stride;
+        data.format = getPixelFormat(format);
+        data.bytesLength = stride * height;
+
+        Quadrilateral quad;
+        quad.points[0].coordinate[0] = x1;
+        quad.points[0].coordinate[1] = y1;
+        quad.points[1].coordinate[0] = x2;
+        quad.points[1].coordinate[1] = y2;
+        quad.points[2].coordinate[0] = x3;
+        quad.points[2].coordinate[1] = y3;
+        quad.points[3].coordinate[0] = x4;
+        quad.points[3].coordinate[1] = y4;
+
+        int errorCode = DDN_NormalizeBuffer(normalizer, &data, "", &quad, &imageResult);
+        if (errorCode != DM_OK)
+            printf("%s\r\n", DC_GetErrorString(errorCode));
+
+        return createNormalizedImage();
     }
 
     void binary2grayscale(unsigned char *data, unsigned char *output, int width, int height, int stride, int length)

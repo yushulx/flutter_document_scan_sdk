@@ -77,8 +77,13 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
     throw UnimplementedError('init() has not been implemented.');
   }
 
-  Future<NormalizedImage?> normalize(String file, dynamic points) {
-    throw UnimplementedError('normalize() has not been implemented.');
+  Future<NormalizedImage?> normalizeFile(String file, dynamic points) {
+    throw UnimplementedError('normalizeFile() has not been implemented.');
+  }
+
+  Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width,
+      int height, int stride, int format, dynamic points) {
+    throw UnimplementedError('normalizeBuffer() has not been implemented.');
   }
 
   Future<List<DocumentResult>?> detectFile(String file) {

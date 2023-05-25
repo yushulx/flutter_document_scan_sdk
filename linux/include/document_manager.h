@@ -123,7 +123,7 @@ public:
         return out;
     }
 
-    FlValue* Normalize(const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    FlValue* NormalizeFile(const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
     {
         FreeImage();
         FlValue* result = fl_value_new_map ();

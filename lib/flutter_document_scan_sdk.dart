@@ -15,8 +15,15 @@ class FlutterDocumentScanSdk {
   }
 
   /// Normalize the image
-  Future<NormalizedImage?> normalize(String file, dynamic points) {
-    return FlutterDocumentScanSdkPlatform.instance.normalize(file, points);
+  Future<NormalizedImage?> normalizeFile(String file, dynamic points) {
+    return FlutterDocumentScanSdkPlatform.instance.normalizeFile(file, points);
+  }
+
+  /// Normalize the image
+  Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width,
+      int height, int stride, int format, dynamic points) async {
+    return FlutterDocumentScanSdkPlatform.instance
+        .normalizeBuffer(bytes, width, height, stride, format, points);
   }
 
   /// Detects documents in the given image file.

@@ -189,7 +189,98 @@ namespace flutter_document_scan_sdk
         manager->DetectBuffer(result, reinterpret_cast<unsigned char*>(bytes.data()), width, height, stride, format);
       }
     }
-    else if (method_call.method_name().compare("normalize") == 0)
+    else if (method_call.method_name().compare("normalizeBuffer") == 0)
+    {
+      std::vector<unsigned char> bytes;
+      EncodableMap results;
+      int width = 0, height = 0, stride = 0, format = 0;
+      int x1 = 0, y1 = 0, x2 = 0, y2 = 0, x3 = 0, y3 = 0, x4 = 0, y4 = 0;
+
+      if (arguments)
+      {
+        auto bytes_it = arguments->find(EncodableValue("bytes"));
+        if (bytes_it != arguments->end())
+        {
+          bytes = std::get<vector<unsigned char>>(bytes_it->second);
+        }
+
+        auto width_it = arguments->find(EncodableValue("width"));
+        if (width_it != arguments->end())
+        {
+          width = std::get<int>(width_it->second);
+        }
+
+        auto height_it = arguments->find(EncodableValue("height"));
+        if (height_it != arguments->end())
+        {
+          height = std::get<int>(height_it->second);
+        }
+
+        auto stride_it = arguments->find(EncodableValue("stride"));
+        if (stride_it != arguments->end())
+        {
+          stride = std::get<int>(stride_it->second);
+        }
+
+        auto format_it = arguments->find(EncodableValue("format"));
+        if (format_it != arguments->end())
+        {
+          format = std::get<int>(format_it->second);
+        }
+
+        auto x1_it = arguments->find(EncodableValue("x1"));
+        if (x1_it != arguments->end())
+        {
+          x1 = std::get<int>(x1_it->second);
+        }
+
+        auto y1_it = arguments->find(EncodableValue("y1"));
+        if (y1_it != arguments->end())
+        {
+          y1 = std::get<int>(y1_it->second);
+        }
+
+        auto x2_it = arguments->find(EncodableValue("x2"));
+        if (x2_it != arguments->end())
+        {
+          x2 = std::get<int>(x2_it->second);
+        }
+
+        auto y2_it = arguments->find(EncodableValue("y2"));
+        if (y2_it != arguments->end())
+        {
+          y2 = std::get<int>(y2_it->second);
+        }
+
+        auto x3_it = arguments->find(EncodableValue("x3"));
+        if (x3_it != arguments->end())
+        {
+          x3 = std::get<int>(x3_it->second);
+        }
+
+        auto y3_it = arguments->find(EncodableValue("y3"));
+        if (y3_it != arguments->end())
+        {
+          y3 = std::get<int>(y3_it->second);
+        }
+
+        auto x4_it = arguments->find(EncodableValue("x4"));
+        if (x4_it != arguments->end())
+        {
+          x4 = std::get<int>(x4_it->second);
+        }
+
+        auto y4_it = arguments->find(EncodableValue("y4"));
+        if (y4_it != arguments->end())
+        {
+          y4 = std::get<int>(y4_it->second);
+        }
+
+        results = manager->NormalizeBuffer(reinterpret_cast<unsigned char*>(bytes.data()), width, height, stride, format, x1, y1, x2, y2, x3, y3, x4, y4);
+      }
+      result->Success(results);
+    }
+    else if (method_call.method_name().compare("normalizeFile") == 0)
     {
       std::string filename;
       EncodableMap results;
@@ -251,7 +342,7 @@ namespace flutter_document_scan_sdk
           y4 = std::get<int>(y4_it->second);
         }
 
-        results = manager->Normalize(filename.c_str(), x1, y1, x2, y2, x3, y3, x4, y4);
+        results = manager->NormalizeFile(filename.c_str(), x1, y1, x2, y2, x3, y3, x4, y4);
       }
 
       result->Success(results);

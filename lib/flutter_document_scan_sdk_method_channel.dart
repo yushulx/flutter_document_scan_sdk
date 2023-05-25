@@ -106,8 +106,9 @@ class MethodChannelFlutterDocumentScanSdk
 
   /// Normalize documents.
   /// [file] - path to the file.
+  /// [points] - points of the document.
   @override
-  Future<NormalizedImage?> normalize(String file, dynamic points) async {
+  Future<NormalizedImage?> normalizeFile(String file, dynamic points) async {
     Offset offset = points[0];
     int x1 = offset.dx.toInt();
     int y1 = offset.dy.toInt();
@@ -124,9 +125,74 @@ class MethodChannelFlutterDocumentScanSdk
     int x4 = offset.dx.toInt();
     int y4 = offset.dy.toInt();
     Map? result = await methodChannel.invokeMapMethod<String, dynamic>(
-      'normalize',
+      'normalizeFile',
       {
         'file': file,
+        'x1': x1,
+        'y1': y1,
+        'x2': x2,
+        'y2': y2,
+        'x3': x3,
+        'y3': y3,
+        'x4': x4,
+        'y4': y4
+      },
+    );
+
+    if (result != null) {
+      var data = result['data'];
+
+      if (data is List) {
+        return NormalizedImage(
+          Uint8List.fromList(data.cast<int>()),
+          result['width'],
+          result['height'],
+        );
+      }
+
+      return NormalizedImage(
+        data,
+        result['width'],
+        result['height'],
+      );
+    }
+
+    return null;
+  }
+
+  /// Normalize documents.
+  /// [bytes] - bytes of the image.
+  /// [width] - width of the image.
+  /// [height] - height of the image.
+  /// [stride] - stride of the image.
+  /// [format] - format of the image.
+  /// [points] - points of the document.
+  @override
+  Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width,
+      int height, int stride, int format, dynamic points) async {
+    Offset offset = points[0];
+    int x1 = offset.dx.toInt();
+    int y1 = offset.dy.toInt();
+
+    offset = points[1];
+    int x2 = offset.dx.toInt();
+    int y2 = offset.dy.toInt();
+
+    offset = points[2];
+    int x3 = offset.dx.toInt();
+    int y3 = offset.dy.toInt();
+
+    offset = points[3];
+    int x4 = offset.dx.toInt();
+    int y4 = offset.dy.toInt();
+    Map? result = await methodChannel.invokeMapMethod<String, dynamic>(
+      'normalizeBuffer',
+      {
+        'bytes': bytes,
+        'width': width,
+        'height': height,
+        'stride': stride,
+        'format': format,
         'x1': x1,
         'y1': y1,
         'x2': x2,
