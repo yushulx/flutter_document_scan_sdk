@@ -204,8 +204,6 @@ public:
 
     static void processBuffer(DocumentManager *self, unsigned char * buffer, int width, int height, int stride, int format)
     {
-        
-
         ImageData data;
         data.bytes = buffer;
         data.width = width;

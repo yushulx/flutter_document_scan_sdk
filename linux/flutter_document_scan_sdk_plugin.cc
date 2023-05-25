@@ -114,6 +114,142 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     g_autoptr(FlValue) result = self->manager->DetectFile(filename);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }
+  else if (strcmp(method, "detectBuffer") == 0)
+  {
+    if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP)
+    {
+      return;
+    }
+
+    FlValue* value = fl_value_lookup_string(args, "bytes");
+    if (value == nullptr) {
+      return;
+    }
+    unsigned char* bytes = (unsigned char*)fl_value_get_uint8_list(value);
+
+    value = fl_value_lookup_string(args, "width");
+    if (value == nullptr) {
+      return;
+    }
+    int width = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "height");
+    if (value == nullptr) {
+      return;
+    }
+    int height = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "stride");
+    if (value == nullptr) {
+      return;
+    }
+    int stride = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "format");
+    if (value == nullptr) {
+      return;
+    }
+    int format = fl_value_get_int(value);
+
+    g_autoptr(FlValue) result = self->manager->DetectBuffer(bytes, width, height, stride, format);
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+  }
+  else if (strcmp(method, "normalizeBuffer") == 0)
+  {
+    if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP)
+    {
+      return;
+    }
+
+    FlValue* value = fl_value_lookup_string(args, "bytes");
+    if (value == nullptr) {
+      return;
+    }
+    unsigned char* bytes = (unsigned char*)fl_value_get_uint8_list(value);
+
+    value = fl_value_lookup_string(args, "width");
+    if (value == nullptr) {
+      return;
+    }
+    int width = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "height");
+    if (value == nullptr) {
+      return;
+    }
+    int height = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "stride");
+    if (value == nullptr) {
+      return;
+    }
+    int stride = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "format");
+    if (value == nullptr) {
+      return;
+    }
+    int format = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "x1");
+    if (value == nullptr)
+    {
+      return;
+    }
+    int x1 = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "y1");
+    if (value == nullptr)
+    {
+      return;
+    }
+    int y1 = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "x2");
+    if (value == nullptr)
+    {
+      return;
+    }
+    int x2 = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "y2");
+    if (value == nullptr)
+    {
+      return;
+    }
+    int y2 = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "x3");
+    if (value == nullptr)
+    {
+      return;
+    }
+    int x3 = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "y3");
+    if (value == nullptr)
+    {
+      return;
+    }
+    int y3 = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "x4");
+    if (value == nullptr)
+    {
+      return;
+    }
+    int x4 = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "y4");
+    if (value == nullptr)
+    {
+      return;
+    }
+    int y4 = fl_value_get_int(value);
+
+    g_autoptr(FlValue) result = self->manager->NormalizeBuffer(bytes, width, height, stride, format, x1, y1, x2, y2, x3, y3, x4, y4);
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+  }
   else if (strcmp(method, "normalizeFile") == 0)
   {
     if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP)

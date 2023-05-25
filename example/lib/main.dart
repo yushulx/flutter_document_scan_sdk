@@ -90,16 +90,29 @@ class _MyHomePageState extends State<MyHomePage> {
               return;
             }
 
-            setState(() {
-              for (int i = 0; i < results.length; i++) {
-                for (int j = 0; j < results[i].points.length; j++) {
-                  if ((results[i].points[j] - details.localPosition).distance <
-                      20) {
-                    results[i].points[j] = details.localPosition;
+            for (int i = 0; i < results.length; i++) {
+              for (int j = 0; j < results[i].points.length; j++) {
+                if ((results[i].points[j] - details.localPosition).distance <
+                    20) {
+                  bool isCollided = false;
+                  for (int index = 1; index < 4; index++) {
+                    int otherIndex = (j + 1) % 4;
+                    if ((results[i].points[otherIndex] - details.localPosition)
+                            .distance <
+                        20) {
+                      isCollided = true;
+                      return;
+                    }
                   }
+
+                  setState(() {
+                    if (!isCollided) {
+                      results[i].points[j] = details.localPosition;
+                    }
+                  });
                 }
               }
-            });
+            }
           },
           child: CustomPaint(
             painter: ImagePainter(image, results),
@@ -167,21 +180,21 @@ class _MyHomePageState extends State<MyHomePage> {
                                 print("loadImage failed");
                                 return;
                               }
-                              // ByteData? byteData = await image!.toByteData(
-                              //     format: ui.ImageByteFormat.rawRgba);
-                              // detectionResults =
-                              //     await flutterDocumentScanSdkPlugin
-                              //         .detectBuffer(
-                              //             byteData!.buffer.asUint8List(),
-                              //             image!.width,
-                              //             image!.height,
-                              //             byteData.lengthInBytes ~/
-                              //                 image!.height,
-                              //             ImagePixelFormat.IPF_ARGB_8888.index);
-
+                              ByteData? byteData = await image!.toByteData(
+                                  format: ui.ImageByteFormat.rawRgba);
                               detectionResults =
                                   await flutterDocumentScanSdkPlugin
-                                      .detectFile(pickedFile!.path);
+                                      .detectBuffer(
+                                          byteData!.buffer.asUint8List(),
+                                          image!.width,
+                                          image!.height,
+                                          byteData.lengthInBytes ~/
+                                              image!.height,
+                                          ImagePixelFormat.IPF_ARGB_8888.index);
+
+                              // detectionResults =
+                              //     await flutterDocumentScanSdkPlugin
+                              //         .detectFile(pickedFile!.path);
                               setState(() {});
                               if (detectionResults!.isEmpty) {
                                 print("No document detected");
