@@ -57,6 +57,55 @@ public:
         return ret;
     }
 
+    ImagePixelFormat getPixelFormat(int format)
+    {
+        ImagePixelFormat pixelFormat = IPF_BGR_888;
+        switch(format) {
+            case 0:
+                pixelFormat = IPF_BINARY;
+                break;
+            case 1:
+                pixelFormat = IPF_BINARYINVERTED;
+                break;
+            case 2:
+                pixelFormat = IPF_GRAYSCALED;
+                break;
+            case 3:
+                pixelFormat = IPF_NV21;
+                break;
+            case 4:
+                pixelFormat = IPF_RGB_565;
+                break;
+            case 5:
+                pixelFormat = IPF_RGB_555;
+                break;
+            case 6:
+                pixelFormat = IPF_RGB_888;
+                break;
+            case 7:
+                pixelFormat = IPF_ARGB_8888;
+                break;
+            case 8:
+                pixelFormat = IPF_RGB_161616;
+                break;
+            case 9: 
+                pixelFormat = IPF_ARGB_16161616;
+                break;
+            case 10:
+                pixelFormat = IPF_ABGR_8888;
+                break;
+            case 11:
+                pixelFormat = IPF_ABGR_16161616;
+                break;
+            case 12:
+                pixelFormat = IPF_BGR_888;
+                break;
+        }
+
+        return pixelFormat;
+    }
+
+
     static int SetLicense(const char *license)
     {
         char errorMsgBuffer[512];
@@ -143,7 +192,7 @@ public:
         data.width = width;
         data.height = height;
         data.stride = stride;
-        data.format = self->getPixelFormat(format);
+        data.format = getPixelFormat(format);
         data.bytesLength = stride * height;
 
         DetectedQuadResultArray *pResults = NULL;
