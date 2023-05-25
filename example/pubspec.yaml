@@ -26,13 +26,13 @@ dependencies:
     # the parent directory to use the current plugin's version.
     path: ../
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
+  flutter_exif_rotation: ^0.5.1
   cupertino_icons: ^1.0.2
   file_selector:
   image_picker:
   path_provider:
   path:
+  
 
 dev_dependencies:
   flutter_test:

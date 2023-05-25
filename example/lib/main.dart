@@ -15,6 +15,7 @@ import 'package:image_picker/image_picker.dart';
 import 'document_page.dart';
 import 'image_painter.dart';
 import 'plugin.dart';
+import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 
 void main() {
   runApp(const MyApp());
@@ -153,6 +154,13 @@ class _MyHomePageState extends State<MyHomePage> {
                             }
 
                             if (pickedFile != null) {
+                              if (Platform.isAndroid || Platform.isIOS) {
+                                File rotatedImage =
+                                    await FlutterExifRotation.rotateImage(
+                                        path: pickedFile!.path);
+                                pickedFile = XFile(rotatedImage.path);
+                              }
+
                               image = await loadImage(pickedFile!);
                               if (image == null) {
                                 print("loadImage failed");
