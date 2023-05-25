@@ -111,7 +111,7 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     }
     const char *filename = fl_value_get_string(value);
 
-    g_autoptr(FlValue) result = self->manager->detectFile(filename);
+    g_autoptr(FlValue) result = self->manager->DetectFile(filename);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }
   else if (strcmp(method, "normalizeFile") == 0)

@@ -172,7 +172,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                               // detectionResults =
                               //     await flutterDocumentScanSdkPlugin
-                              //         .detectFile(file);
+                              //         .detectFile(pickedFile!.path);
                               setState(() {});
                               if (detectionResults!.isEmpty) {
                                 print("No document detected");
