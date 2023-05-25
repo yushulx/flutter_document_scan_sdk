@@ -47,6 +47,7 @@ class _DocumentPageState extends State<DocumentPage> {
   }
 
   Future<void> initDocumentState() async {
+    await flutterDocumentScanSdkPlugin.setParameters(Template.grayscale);
     // await normalizeFile(widget.file.path, widget.detectionResults[0].points);
     sourceImage = await loadImage(widget.file);
     await normalizeBuffer(sourceImage!, widget.detectionResults[0].points);
