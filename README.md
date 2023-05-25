@@ -99,13 +99,25 @@ Include the JavaScript library of Dynamsoft Document Normalizer in your `index.h
             await _flutterDocumentScanSdkPlugin
                 .detectFile(file);
     ```
+- Detect document edges from a buffer:
+
+    ```dart
+    List<DocumentResult>? detectionResults =
+            await _flutterDocumentScanSdkPlugin
+                .detectBuffer(bytes, width, height, stride, format);
+    ```
 - Rectify the document based on document corners:
 
     ```dart
     NormalizedImage? normalizedImage = await _flutterDocumentScanSdkPlugin.normalizeFile(
         file, detectionResults[0].points);
     ```
+- Rectify the document based on document corners from a buffer:
 
+    ```dart
+    NormalizedImage? normalizedImage = await _flutterDocumentScanSdkPlugin.normalizeBuffer(
+        bytes, width, height, stride, format, detectionResults[0].points);
+    ```
 - Save the document to the local disk:
 
     ```dart

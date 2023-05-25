@@ -154,7 +154,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             }
 
                             if (pickedFile != null) {
-                              if (Platform.isAndroid || Platform.isIOS) {
+                              if (!kIsWeb &&
+                                  (Platform.isAndroid || Platform.isIOS)) {
                                 File rotatedImage =
                                     await FlutterExifRotation.rotateImage(
                                         path: pickedFile!.path);

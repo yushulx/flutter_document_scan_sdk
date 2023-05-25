@@ -1,3 +1,8 @@
+## 0.5.0
+- Renamed `normalize()` to `normalizeFile`.
+- Renamed `detect()` to `detectFile`.
+- Added `normalizeBuffer()` and `detectBuffer()` for Windows.
+
 ## 0.4.0
 - Updated example code to support quadrilateral editing.
 - Updated DDNJS to 1.0.12.
