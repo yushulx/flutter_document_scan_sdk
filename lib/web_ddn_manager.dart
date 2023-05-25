@@ -81,7 +81,7 @@ class DDNManager {
   /// [file] - path to the file.
   /// [points] - points of the document.
   /// Returns a [NormalizedImage].
-  Future<NormalizedImage?> normalize(String file, dynamic points) async {
+  Future<NormalizedImage?> normalizeFile(String file, dynamic points) async {
     List<dynamic> jsOffsets = points.map((Offset offset) {
       return {'x': offset.dx, 'y': offset.dy};
     }).toList();
@@ -100,17 +100,47 @@ class DDNManager {
         dynamic data = result.data;
         Uint8List bytes = Uint8List.fromList(data);
         image = NormalizedImage(bytes, result.width, result.height);
-        return image;
       }
     }
 
-    return null;
+    return image;
+  }
+
+  /// Normalize documents.
+  /// [file] - path to the file.
+  /// [points] - points of the document.
+  /// Returns a [NormalizedImage].
+  Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width,
+      int height, int stride, int format, dynamic points) async {
+    List<dynamic> jsOffsets = points.map((Offset offset) {
+      return {'x': offset.dx, 'y': offset.dy};
+    }).toList();
+
+    dynamic jsonObj = jsonEncode({
+      "quad": {"points": jsOffsets}
+    });
+
+    NormalizedImage? image;
+    // if (_normalizer != null) {
+    //   _normalizedDocument =
+    //       await handleThenable(_normalizer!.normalize(file, parse(jsonObj)));
+
+    //   if (_normalizedDocument != null) {
+    //     Image result = _normalizedDocument!.image;
+    //     dynamic data = result.data;
+    //     Uint8List bytes = Uint8List.fromList(data);
+    //     image = NormalizedImage(bytes, result.width, result.height);
+    //     return image;
+    //   }
+    // }
+
+    return image;
   }
 
   /// Document edge detection
   /// [file] - path to the file.
   /// Returns a [List] of [DocumentResult].
-  Future<List<DocumentResult>> detect(String file) async {
+  Future<List<DocumentResult>> detectFile(String file) async {
     if (_normalizer != null) {
       List<dynamic> results =
           await handleThenable(_normalizer!.detectQuad(file));

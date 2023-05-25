@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_document_scan_sdk/document_result.dart';
 
 import 'flutter_document_scan_sdk_platform_interface.dart';
@@ -14,13 +15,27 @@ class FlutterDocumentScanSdk {
   }
 
   /// Normalize the image
-  Future<NormalizedImage?> normalize(String file, dynamic points) {
-    return FlutterDocumentScanSdkPlatform.instance.normalize(file, points);
+  Future<NormalizedImage?> normalizeFile(String file, dynamic points) {
+    return FlutterDocumentScanSdkPlatform.instance.normalizeFile(file, points);
+  }
+
+  /// Normalize the image
+  Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width,
+      int height, int stride, int format, dynamic points) async {
+    return FlutterDocumentScanSdkPlatform.instance
+        .normalizeBuffer(bytes, width, height, stride, format, points);
   }
 
   /// Detects documents in the given image file.
-  Future<List<DocumentResult>?> detect(String file) {
-    return FlutterDocumentScanSdkPlatform.instance.detect(file);
+  Future<List<DocumentResult>?> detectFile(String file) {
+    return FlutterDocumentScanSdkPlatform.instance.detectFile(file);
+  }
+
+  /// Detects documents from the given image bytes.
+  Future<List<DocumentResult>?> detectBuffer(
+      Uint8List bytes, int width, int height, int stride, int format) {
+    return FlutterDocumentScanSdkPlatform.instance
+        .detectBuffer(bytes, width, height, stride, format);
   }
 
   /// Save the current image to the given filename.

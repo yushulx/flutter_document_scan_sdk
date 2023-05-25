@@ -118,7 +118,7 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
         result.success(parameters);
         break;
       }
-      case "detect": {
+      case "detectFile": {
         final String filename = call.argument("file");
         List<Map<String, Object>> out = new ArrayList<>();
         try {
@@ -158,7 +158,7 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
         result.success(out);
         break;
       }
-      case "normalize": {
+      case "normalizeFile": {
         final String filename = call.argument("file");
         final int x1 = call.argument("x1");
         final int y1 = call.argument("y1");

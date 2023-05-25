@@ -10,6 +10,12 @@
 
 #include <flutter/standard_method_codec.h>
 
+#include <thread>
+#include <condition_variable>
+#include <mutex>
+#include <queue>
+#include <functional>
+
 using namespace std;
 using namespace dynamsoft::ddn;
 using namespace dynamsoft::core;
@@ -18,11 +24,29 @@ using flutter::EncodableList;
 using flutter::EncodableMap;
 using flutter::EncodableValue;
 
+class Task
+{
+public:
+    std::function<void()> func;
+    unsigned char* buffer;
+};
+
+class WorkerThread
+{
+public:
+    std::mutex m;
+    std::condition_variable cv;
+    std::queue<Task> tasks = {};
+    volatile bool running;
+    std::thread t;
+};
+
 class DocumentManager
 {
 public:
     ~DocumentManager()
     {
+        clear();
         if (normalizer != NULL)
         {
             DDN_DestroyInstance(normalizer);
@@ -31,6 +55,37 @@ public:
 
         FreeImage();
     };
+
+    void clearTasks()
+    {
+        if (worker->tasks.size() > 0)
+        {
+            for (int i = 0; i < worker->tasks.size(); i++)
+            {
+                free(worker->tasks.front().buffer);
+                worker->tasks.pop();
+            }
+        }
+    }
+
+    void clear()
+    {
+        if (worker)
+        {
+            std::unique_lock<std::mutex> lk(worker->m);
+            worker->running = false;
+            
+            clearTasks();
+
+            worker->cv.notify_one();
+            lk.unlock();
+
+            worker->t.join();
+            delete worker;
+            worker = NULL;
+            printf("Quit native thread.\n");
+        }
+    }
 
     const char *GetVersion()
     {
@@ -41,6 +96,9 @@ public:
     {
         normalizer = DDN_CreateInstance();
         imageResult = NULL;
+        worker = new WorkerThread();
+        worker->running = true;
+        worker->t = thread(&run, this);
     }
 
     int SetParameters(const char *params)
@@ -60,6 +118,116 @@ public:
         return ret;
     }
 
+    static void run(DocumentManager *self)
+    {
+        while (self->worker->running)
+        {
+            std::function<void()> task;
+            std::unique_lock<std::mutex> lk(self->worker->m);
+            self->worker->cv.wait(lk, [&]
+                                { return !self->worker->tasks.empty() || !self->worker->running; });
+            if (!self->worker->running)
+            {
+                break;
+            }
+            task = std::move(self->worker->tasks.front().func);
+            self->worker->tasks.pop();
+            lk.unlock();
+
+            task();
+        }
+    }
+
+    void queueTask(unsigned char* barcodeBuffer, int width, int height, int stride, int format, int len)
+    {    
+        unsigned char *data = (unsigned char *)malloc(len);
+        memcpy(data, barcodeBuffer, len);
+
+        std::unique_lock<std::mutex> lk(worker->m);
+        clearTasks();
+        std::function<void()> task_function = std::bind(processBuffer, this, data, width, height, stride, format);
+        Task task;
+        task.func = task_function;
+        task.buffer = data;
+        worker->tasks.push(task);
+        worker->cv.notify_one();
+        lk.unlock();
+    }
+
+    ImagePixelFormat getPixelFormat(int format)
+    {
+        ImagePixelFormat pixelFormat = IPF_BGR_888;
+        switch(format) {
+            case 0:
+                pixelFormat = IPF_BINARY;
+                break;
+            case 1:
+                pixelFormat = IPF_BINARYINVERTED;
+                break;
+            case 2:
+                pixelFormat = IPF_GRAYSCALED;
+                break;
+            case 3:
+                pixelFormat = IPF_NV21;
+                break;
+            case 4:
+                pixelFormat = IPF_RGB_565;
+                break;
+            case 5:
+                pixelFormat = IPF_RGB_555;
+                break;
+            case 6:
+                pixelFormat = IPF_RGB_888;
+                break;
+            case 7:
+                pixelFormat = IPF_ARGB_8888;
+                break;
+            case 8:
+                pixelFormat = IPF_RGB_161616;
+                break;
+            case 9: 
+                pixelFormat = IPF_ARGB_16161616;
+                break;
+            case 10:
+                pixelFormat = IPF_ABGR_8888;
+                break;
+            case 11:
+                pixelFormat = IPF_ABGR_16161616;
+                break;
+            case 12:
+                pixelFormat = IPF_BGR_888;
+                break;
+        }
+
+        return pixelFormat;
+    }
+
+    static void processBuffer(DocumentManager *self, unsigned char * buffer, int width, int height, int stride, int format)
+    {
+        
+
+        ImageData data;
+        data.bytes = buffer;
+        data.width = width;
+        data.height = height;
+        data.stride = stride;
+        data.format = self->getPixelFormat(format);
+        data.bytesLength = stride * height;
+
+        DetectedQuadResultArray *pResults = NULL;
+        int ret = DDN_DetectQuadFromBuffer(self->normalizer, &data, "", &pResults);
+        if (ret)
+        {
+            printf("Detection error: %s\n", DC_GetErrorString(ret));
+        }
+
+        free(buffer);
+        EncodableList results = self->WrapResults(pResults);
+        std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result = std::move(self->pendingResults.front());
+        self->pendingResults.erase(self->pendingResults.begin());
+        result->Success(results);
+    }
+
     static int SetLicense(const char *license)
     {
         char errorMsgBuffer[512];
@@ -72,19 +240,11 @@ public:
         return ret;
     }
 
-    EncodableList Detect(const char *filename)
+    EncodableList WrapResults(DetectedQuadResultArray *pResults) 
     {
         EncodableList out;
         if (normalizer == NULL)
             return out;
-
-        DetectedQuadResultArray *pResults = NULL;
-
-        int ret = DDN_DetectQuadFromFile(normalizer, filename, "", &pResults);
-        if (ret)
-        {
-            printf("Detection error: %s\n", DC_GetErrorString(ret));
-        }
 
         if (pResults)
         {
@@ -125,24 +285,26 @@ public:
         return out;
     }
 
-    EncodableMap Normalize(const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    EncodableList DetectFile(const char *filename)
     {
-        FreeImage();
+        EncodableList out;
+        if (normalizer == NULL)
+            return out;
+
+        DetectedQuadResultArray *pResults = NULL;
+
+        int ret = DDN_DetectQuadFromFile(normalizer, filename, "", &pResults);
+        if (ret)
+        {
+            printf("Detection error: %s\n", DC_GetErrorString(ret));
+        }
+
+        return WrapResults(pResults);
+    }
+
+    EncodableMap createNormalizedImage()
+    {
         EncodableMap map;
-
-        Quadrilateral quad;
-        quad.points[0].coordinate[0] = x1;
-        quad.points[0].coordinate[1] = y1;
-        quad.points[1].coordinate[0] = x2;
-        quad.points[1].coordinate[1] = y2;
-        quad.points[2].coordinate[0] = x3;
-        quad.points[2].coordinate[1] = y3;
-        quad.points[3].coordinate[0] = x4;
-        quad.points[3].coordinate[1] = y4;
-
-        int errorCode = DDN_NormalizeFile(normalizer, filename, "", &quad, &imageResult);
-        if (errorCode != DM_OK)
-            printf("%s\r\n", DC_GetErrorString(errorCode));
 
         if (imageResult)
         {
@@ -228,6 +390,56 @@ public:
         return map;
     }
 
+    EncodableMap NormalizeFile(const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    {
+        FreeImage();
+
+        Quadrilateral quad;
+        quad.points[0].coordinate[0] = x1;
+        quad.points[0].coordinate[1] = y1;
+        quad.points[1].coordinate[0] = x2;
+        quad.points[1].coordinate[1] = y2;
+        quad.points[2].coordinate[0] = x3;
+        quad.points[2].coordinate[1] = y3;
+        quad.points[3].coordinate[0] = x4;
+        quad.points[3].coordinate[1] = y4;
+
+        int errorCode = DDN_NormalizeFile(normalizer, filename, "", &quad, &imageResult);
+        if (errorCode != DM_OK)
+            printf("%s\r\n", DC_GetErrorString(errorCode));
+
+        return createNormalizedImage();
+    }
+
+    EncodableMap NormalizeBuffer(const unsigned char * buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    {
+        FreeImage();
+
+        ImageData data;
+        data.bytes = (unsigned char *)buffer;
+        data.width = width;
+        data.height = height;
+        data.stride = stride;
+        data.format = getPixelFormat(format);
+        data.bytesLength = stride * height;
+
+        Quadrilateral quad;
+        quad.points[0].coordinate[0] = x1;
+        quad.points[0].coordinate[1] = y1;
+        quad.points[1].coordinate[0] = x2;
+        quad.points[1].coordinate[1] = y2;
+        quad.points[2].coordinate[0] = x3;
+        quad.points[2].coordinate[1] = y3;
+        quad.points[3].coordinate[0] = x4;
+        quad.points[3].coordinate[1] = y4;
+
+        int errorCode = DDN_NormalizeBuffer(normalizer, &data, "", &quad, &imageResult);
+        if (errorCode != DM_OK)
+            printf("%s\r\n", DC_GetErrorString(errorCode));
+
+        return createNormalizedImage();
+    }
+
     void binary2grayscale(unsigned char *data, unsigned char *output, int width, int height, int stride, int length)
     {
         int index = 0;
@@ -288,9 +500,17 @@ public:
         return ret;
     }
 
+    void DetectBuffer(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& pendingResult, const unsigned char * buffer, int width, int height, int stride, int format) 
+    {
+        pendingResults.push_back(std::move(pendingResult));
+        queueTask((unsigned char*)buffer, width, height, stride, format, stride * height);
+    }
+
 private:
     void *normalizer;
     NormalizedImageResult *imageResult;
+    WorkerThread *worker;
+    vector<std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>> pendingResults = {};
 
     void FreeImage()
     {

@@ -44,7 +44,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             let parameters = try? self.normalizer!.outputRuntimeSettings("")
             
             result(parameters)
-        case "detect":
+        case "detectFile":
             if self.normalizer == nil {
                 result(.none)
                 return
@@ -77,7 +77,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
                 }
                 result(out)
             }
-        case "normalize":
+        case "normalizeFile":
             if self.normalizer == nil {
                 result(.none)
                 return

@@ -4,6 +4,7 @@
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html show window;
 
+import 'package:flutter/services.dart';
 import 'package:flutter_document_scan_sdk/normalized_image.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
@@ -38,15 +39,29 @@ class FlutterDocumentScanSdkWeb extends FlutterDocumentScanSdkPlatform {
   /// Normalize documents.
   /// [file] - path to the file.
   @override
-  Future<NormalizedImage?> normalize(String file, dynamic points) async {
-    return _ddnManager.normalize(file, points);
+  Future<NormalizedImage?> normalizeFile(String file, dynamic points) async {
+    return _ddnManager.normalizeFile(file, points);
+  }
+
+  /// Normalize documents.
+  /// [bytes] - image bytes.
+  /// [width] - image width.
+  /// [height] - image height.
+  /// [stride] - image stride.
+  /// [format] - image format.
+  /// [points] - document points.
+  @override
+  Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width,
+      int height, int stride, int format, dynamic points) async {
+    return _ddnManager.normalizeBuffer(
+        bytes, width, height, stride, format, points);
   }
 
   /// Document edge detection.
   /// Returns a [List] of [DocumentResult].
   @override
-  Future<List<DocumentResult>?> detect(String file) async {
-    return _ddnManager.detect(file);
+  Future<List<DocumentResult>?> detectFile(String file) async {
+    return _ddnManager.detectFile(file);
   }
 
   /// Save a document.
