@@ -92,7 +92,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
                 let stride:Int = arguments.value(forKey: "stride") as! Int
                 let format:Int = arguments.value(forKey: "format") as! Int
                 let enumImagePixelFormat = EnumImagePixelFormat(rawValue: format)
-                iImageData data = iImageData()
+                let data = iImageData()
                 data.bytes = buffer.data
                 data.width = w
                 data.height = h
@@ -146,7 +146,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             let x4: Int = arguments.value(forKey: "x4") as! Int
             let y4: Int = arguments.value(forKey: "y4") as! Int
 
-            iImageData data = iImageData()
+            let data = iImageData()
             data.bytes = buffer.data
             data.width = w
             data.height = h

@@ -77,8 +77,8 @@ Include the JavaScript library of Dynamsoft Document Normalizer in your `index.h
 | `Future<int?> save(String filename)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | 
 | `Future<int?> setParameters(String params)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | 
 | `Future<String?> getParameters()`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | 
-| `Future<List<DocumentResult>?> detectBuffer(Uint8List bytes, int width, int height, int stride, int format)`     | :heavy_check_mark:      | :x:   | :heavy_check_mark:      |:heavy_check_mark:      | :x:     |
-| `Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width, int height, int stride, int format, dynamic points)`     | :heavy_check_mark:      | :x:   | :heavy_check_mark:      |:heavy_check_mark:      | :x:     |
+| `Future<List<DocumentResult>?> detectBuffer(Uint8List bytes, int width, int height, int stride, int format)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :x:     |
+| `Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width, int height, int stride, int format, dynamic points)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :x:     |
 
 ## Usage
 - Initialize the document rectification SDK with resource path and license key. The resource path is only required for **web apps**:
