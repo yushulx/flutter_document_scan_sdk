@@ -81,12 +81,11 @@ Include the JavaScript library of Dynamsoft Document Normalizer in your `index.h
 | `Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width, int height, int stride, int format, dynamic points)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:     |
 
 ## Usage
-- Initialize the document rectification SDK with resource path and license key. The resource path is only required for **web apps**:
+- Initialize the document rectification SDK with a valid license key:
 
      ```dart
     final _flutterDocumentScanSdkPlugin = FlutterDocumentScanSdk();
     await _flutterDocumentScanSdkPlugin.init(
-        "https://cdn.jsdelivr.net/npm/dynamsoft-document-normalizer@1.0.12/dist/",
         "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==");
 
     await _flutterDocumentScanSdkPlugin.setParameters(Template.grayscale);
