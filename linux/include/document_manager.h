@@ -238,9 +238,9 @@ public:
                     for (int j = 0; j < width; j++)
                     {
                         int index = i * width + j;                  
-                        rgba[index * 4] = data[dataIndex + 2];     // red
+                        rgba[index * 4] = data[dataIndex];     // red
                         rgba[index * 4 + 1] = data[dataIndex + 1]; // green
-                        rgba[index * 4 + 2] = data[dataIndex];     // blue
+                        rgba[index * 4 + 2] = data[dataIndex + 2];     // blue
                         rgba[index * 4 + 3] = 255;                 // alpha
                         dataIndex += 3;
                     }
