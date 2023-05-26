@@ -179,21 +179,26 @@ class _MyHomePageState extends State<MyHomePage> {
                                 print("loadImage failed");
                                 return;
                               }
-                              ByteData? byteData = await image!.toByteData(
-                                  format: ui.ImageByteFormat.rawRgba);
-                              detectionResults =
-                                  await flutterDocumentScanSdkPlugin
-                                      .detectBuffer(
-                                          byteData!.buffer.asUint8List(),
-                                          image!.width,
-                                          image!.height,
-                                          byteData.lengthInBytes ~/
-                                              image!.height,
-                                          ImagePixelFormat.IPF_ARGB_8888.index);
 
-                              // detectionResults =
-                              //     await flutterDocumentScanSdkPlugin
-                              //         .detectFile(pickedFile!.path);
+                              if (kIsWeb) {
+                                detectionResults =
+                                    await flutterDocumentScanSdkPlugin
+                                        .detectFile(pickedFile!.path);
+                              } else {
+                                ByteData? byteData = await image!.toByteData(
+                                    format: ui.ImageByteFormat.rawRgba);
+                                detectionResults =
+                                    await flutterDocumentScanSdkPlugin
+                                        .detectBuffer(
+                                            byteData!.buffer.asUint8List(),
+                                            image!.width,
+                                            image!.height,
+                                            byteData.lengthInBytes ~/
+                                                image!.height,
+                                            ImagePixelFormat
+                                                .IPF_ARGB_8888.index);
+                              }
+
                               setState(() {});
                               if (detectionResults!.isEmpty) {
                                 print("No document detected");

@@ -1,3 +1,6 @@
+## 1.0.0
+- Added `normalizeBuffer()` and `detectBuffer()` for Linux, Android, iOS and web.
+
 ## 0.5.0
 - Renamed `normalize()` to `normalizeFile`.
 - Renamed `detect()` to `detectFile`.
