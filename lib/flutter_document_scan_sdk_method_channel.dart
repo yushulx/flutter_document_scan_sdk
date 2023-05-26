@@ -21,9 +21,8 @@ class MethodChannelFlutterDocumentScanSdk
 
   /// Initialize the SDK
   @override
-  Future<int?> init(String path, String key) async {
-    return await methodChannel
-        .invokeMethod<int>('init', {'path': path, 'key': key});
+  Future<int?> init(String key) async {
+    return await methodChannel.invokeMethod<int>('init', {'key': key});
   }
 
   /// Set parameters for the document scanner

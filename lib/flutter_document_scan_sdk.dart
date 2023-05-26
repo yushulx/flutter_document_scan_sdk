@@ -10,8 +10,8 @@ class FlutterDocumentScanSdk {
   }
 
   /// Initialize the SDK
-  Future<int?> init(String path, String key) {
-    return FlutterDocumentScanSdkPlatform.instance.init(path, key);
+  Future<int?> init(String key) {
+    return FlutterDocumentScanSdkPlatform.instance.init(key);
   }
 
   /// Normalize the image

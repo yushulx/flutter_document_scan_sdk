@@ -30,6 +30,7 @@ class Image {
   external dynamic get data;
   external int get width;
   external int get height;
+  external String get pixelFormat;
 }
 
 /// NormalizedDocument class
@@ -46,8 +47,8 @@ class DDNManager {
 
   /// Configure Dynamsoft Document Normalizer.
   /// Returns 0 if successful.
-  Future<int> init(String path, String key) async {
-    DocumentNormalizer.engineResourcePath = path;
+  Future<int> init(String key) async {
+    // DocumentNormalizer.engineResourcePath = path;
     DocumentNormalizer.license = key;
 
     _normalizer = await handleThenable(DocumentNormalizer.createInstance());

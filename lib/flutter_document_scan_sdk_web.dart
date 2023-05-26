@@ -32,8 +32,8 @@ class FlutterDocumentScanSdkWeb extends FlutterDocumentScanSdkPlatform {
 
   /// Initialize the controller.
   @override
-  Future<int?> init(String path, String key) async {
-    return _ddnManager.init(path, key);
+  Future<int?> init(String key) async {
+    return _ddnManager.init(key);
   }
 
   /// Normalize documents.

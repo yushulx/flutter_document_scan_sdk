@@ -73,7 +73,7 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
 
-  Future<int?> init(String path, String key) {
+  Future<int?> init(String key) {
     throw UnimplementedError('init() has not been implemented.');
   }
 

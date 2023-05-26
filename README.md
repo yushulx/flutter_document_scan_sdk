@@ -71,7 +71,7 @@ Include the JavaScript library of Dynamsoft Document Normalizer in your `index.h
 ## API Compatibility
 | Methods      | Android |    iOS | Windows | Linux | Web|
 | ----------- | ----------- | ----------- | ----------- |----------- |----------- |
-| `Future<int?> init(String path, String key)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:      | :heavy_check_mark:      |:heavy_check_mark:      | 
+| `Future<int?> init(String key)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:      | :heavy_check_mark:      |:heavy_check_mark:      | 
 | `Future<List<DocumentResult>?> detectFile(String file)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:     |
 | `Future<NormalizedImage?> normalizeFile(String file, dynamic points)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:     |
 | `Future<int?> save(String filename)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | 
