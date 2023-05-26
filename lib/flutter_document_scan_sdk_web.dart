@@ -60,6 +60,14 @@ class FlutterDocumentScanSdkWeb extends FlutterDocumentScanSdkPlatform {
   /// Document edge detection.
   /// Returns a [List] of [DocumentResult].
   @override
+  Future<List<DocumentResult>> detectBuffer(
+      Uint8List bytes, int width, int height, int stride, int format) async {
+    return _ddnManager.detectBuffer(bytes, width, height, stride, format);
+  }
+
+  /// Document edge detection.
+  /// Returns a [List] of [DocumentResult].
+  @override
   Future<List<DocumentResult>?> detectFile(String file) async {
     return _ddnManager.detectFile(file);
   }
