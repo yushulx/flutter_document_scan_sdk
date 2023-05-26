@@ -47,9 +47,13 @@ class _DocumentPageState extends State<DocumentPage> {
   }
 
   Future<void> initDocumentState() async {
-    await normalizeFile(widget.file.path, widget.detectionResults[0].points);
-    // sourceImage = await loadImage(widget.file);
-    // await normalizeBuffer(sourceImage!, widget.detectionResults[0].points);
+    await flutterDocumentScanSdkPlugin.setParameters(Template.grayscale);
+    if (kIsWeb) {
+      await normalizeFile(widget.file.path, widget.detectionResults[0].points);
+    } else {
+      sourceImage = await loadImage(widget.file);
+      await normalizeBuffer(sourceImage!, widget.detectionResults[0].points);
+    }
   }
 
   Widget createCustomImage(
@@ -94,10 +98,13 @@ class _DocumentPageState extends State<DocumentPage> {
                       .setParameters(Template.binary);
 
                   if (widget.detectionResults.isNotEmpty) {
-                    // await normalizeBuffer(
-                    //     sourceImage!, widget.detectionResults[0].points);
-                    await normalizeFile(
-                        widget.file.path, widget.detectionResults[0].points);
+                    if (kIsWeb) {
+                      await normalizeFile(
+                          widget.file.path, widget.detectionResults[0].points);
+                    } else {
+                      await normalizeBuffer(
+                          sourceImage!, widget.detectionResults[0].points);
+                    }
                   }
                 },
               ),
@@ -114,10 +121,13 @@ class _DocumentPageState extends State<DocumentPage> {
                       .setParameters(Template.grayscale);
 
                   if (widget.detectionResults.isNotEmpty) {
-                    // await normalizeBuffer(
-                    //     sourceImage!, widget.detectionResults[0].points);
-                    await normalizeFile(
-                        widget.file.path, widget.detectionResults[0].points);
+                    if (kIsWeb) {
+                      await normalizeFile(
+                          widget.file.path, widget.detectionResults[0].points);
+                    } else {
+                      await normalizeBuffer(
+                          sourceImage!, widget.detectionResults[0].points);
+                    }
                   }
                 },
               ),
@@ -134,10 +144,13 @@ class _DocumentPageState extends State<DocumentPage> {
                       .setParameters(Template.color);
 
                   if (widget.detectionResults.isNotEmpty) {
-                    // await normalizeBuffer(
-                    //     sourceImage!, widget.detectionResults[0].points);
-                    await normalizeFile(
-                        widget.file.path, widget.detectionResults[0].points);
+                    if (kIsWeb) {
+                      await normalizeFile(
+                          widget.file.path, widget.detectionResults[0].points);
+                    } else {
+                      await normalizeBuffer(
+                          sourceImage!, widget.detectionResults[0].points);
+                    }
                   }
                 },
               ),

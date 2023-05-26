@@ -32,8 +32,8 @@ class FlutterDocumentScanSdkWeb extends FlutterDocumentScanSdkPlatform {
 
   /// Initialize the controller.
   @override
-  Future<int?> init(String path, String key) async {
-    return _ddnManager.init(path, key);
+  Future<int?> init(String key) async {
+    return _ddnManager.init(key);
   }
 
   /// Normalize documents.
@@ -55,6 +55,14 @@ class FlutterDocumentScanSdkWeb extends FlutterDocumentScanSdkPlatform {
       int height, int stride, int format, dynamic points) async {
     return _ddnManager.normalizeBuffer(
         bytes, width, height, stride, format, points);
+  }
+
+  /// Document edge detection.
+  /// Returns a [List] of [DocumentResult].
+  @override
+  Future<List<DocumentResult>> detectBuffer(
+      Uint8List bytes, int width, int height, int stride, int format) async {
+    return _ddnManager.detectBuffer(bytes, width, height, stride, format);
   }
 
   /// Document edge detection.

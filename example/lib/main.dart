@@ -66,7 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> initHomePageState() async {
     int? ret = await flutterDocumentScanSdkPlugin.init(
-        "https://cdn.jsdelivr.net/npm/dynamsoft-document-normalizer@1.0.12/dist/",
         "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==");
     String? params = await flutterDocumentScanSdkPlugin.getParameters();
     print(params);
@@ -90,16 +89,29 @@ class _MyHomePageState extends State<MyHomePage> {
               return;
             }
 
-            setState(() {
-              for (int i = 0; i < results.length; i++) {
-                for (int j = 0; j < results[i].points.length; j++) {
-                  if ((results[i].points[j] - details.localPosition).distance <
-                      20) {
-                    results[i].points[j] = details.localPosition;
+            for (int i = 0; i < results.length; i++) {
+              for (int j = 0; j < results[i].points.length; j++) {
+                if ((results[i].points[j] - details.localPosition).distance <
+                    20) {
+                  bool isCollided = false;
+                  for (int index = 1; index < 4; index++) {
+                    int otherIndex = (j + 1) % 4;
+                    if ((results[i].points[otherIndex] - details.localPosition)
+                            .distance <
+                        20) {
+                      isCollided = true;
+                      return;
+                    }
                   }
+
+                  setState(() {
+                    if (!isCollided) {
+                      results[i].points[j] = details.localPosition;
+                    }
+                  });
                 }
               }
-            });
+            }
           },
           child: CustomPaint(
             painter: ImagePainter(image, results),
@@ -167,21 +179,26 @@ class _MyHomePageState extends State<MyHomePage> {
                                 print("loadImage failed");
                                 return;
                               }
-                              // ByteData? byteData = await image!.toByteData(
-                              //     format: ui.ImageByteFormat.rawRgba);
-                              // detectionResults =
-                              //     await flutterDocumentScanSdkPlugin
-                              //         .detectBuffer(
-                              //             byteData!.buffer.asUint8List(),
-                              //             image!.width,
-                              //             image!.height,
-                              //             byteData.lengthInBytes ~/
-                              //                 image!.height,
-                              //             ImagePixelFormat.IPF_ARGB_8888.index);
 
-                              detectionResults =
-                                  await flutterDocumentScanSdkPlugin
-                                      .detectFile(pickedFile!.path);
+                              if (kIsWeb) {
+                                detectionResults =
+                                    await flutterDocumentScanSdkPlugin
+                                        .detectFile(pickedFile!.path);
+                              } else {
+                                ByteData? byteData = await image!.toByteData(
+                                    format: ui.ImageByteFormat.rawRgba);
+                                detectionResults =
+                                    await flutterDocumentScanSdkPlugin
+                                        .detectBuffer(
+                                            byteData!.buffer.asUint8List(),
+                                            image!.width,
+                                            image!.height,
+                                            byteData.lengthInBytes ~/
+                                                image!.height,
+                                            ImagePixelFormat
+                                                .IPF_ARGB_8888.index);
+                              }
+
                               setState(() {});
                               if (detectionResults!.isEmpty) {
                                 print("No document detected");

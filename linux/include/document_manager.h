@@ -57,6 +57,55 @@ public:
         return ret;
     }
 
+    ImagePixelFormat getPixelFormat(int format)
+    {
+        ImagePixelFormat pixelFormat = IPF_BGR_888;
+        switch(format) {
+            case 0:
+                pixelFormat = IPF_BINARY;
+                break;
+            case 1:
+                pixelFormat = IPF_BINARYINVERTED;
+                break;
+            case 2:
+                pixelFormat = IPF_GRAYSCALED;
+                break;
+            case 3:
+                pixelFormat = IPF_NV21;
+                break;
+            case 4:
+                pixelFormat = IPF_RGB_565;
+                break;
+            case 5:
+                pixelFormat = IPF_RGB_555;
+                break;
+            case 6:
+                pixelFormat = IPF_RGB_888;
+                break;
+            case 7:
+                pixelFormat = IPF_ARGB_8888;
+                break;
+            case 8:
+                pixelFormat = IPF_RGB_161616;
+                break;
+            case 9: 
+                pixelFormat = IPF_ARGB_16161616;
+                break;
+            case 10:
+                pixelFormat = IPF_ABGR_8888;
+                break;
+            case 11:
+                pixelFormat = IPF_ABGR_16161616;
+                break;
+            case 12:
+                pixelFormat = IPF_BGR_888;
+                break;
+        }
+
+        return pixelFormat;
+    }
+
+
     static int SetLicense(const char *license)
     {
         char errorMsgBuffer[512];
@@ -69,19 +118,11 @@ public:
         return ret;
     }
 
-    FlValue* DetectFile(const char *filename)
+    FlValue* WrapResults(DetectedQuadResultArray *pResults) 
     {
         FlValue* out = fl_value_new_list();
         if (normalizer == NULL)
             return out;
-
-        DetectedQuadResultArray *pResults = NULL;
-
-        int ret = DDN_DetectQuadFromFile(normalizer, filename, "", &pResults);
-        if (ret)
-        {
-            printf("Detection error: %s\n", DC_GetErrorString(ret));
-        }
 
         if (pResults)
         {
@@ -123,24 +164,51 @@ public:
         return out;
     }
 
-    FlValue* NormalizeFile(const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+     FlValue* DetectFile(const char *filename)
     {
-        FreeImage();
+        FlValue* out = fl_value_new_list();
+        if (normalizer == NULL)
+            return out;
+
+        DetectedQuadResultArray *pResults = NULL;
+
+        int ret = DDN_DetectQuadFromFile(normalizer, filename, "", &pResults);
+        if (ret)
+        {
+            printf("Detection error: %s\n", DC_GetErrorString(ret));
+        }
+
+        return WrapResults(pResults);
+    }
+
+    FlValue* DetectBuffer(unsigned char * buffer, int width, int height, int stride, int format)
+    {
+        FlValue* out = fl_value_new_list();
+        if (normalizer == NULL)
+            return out;
+
+        ImageData data;
+        data.bytes = buffer;
+        data.width = width;
+        data.height = height;
+        data.stride = stride;
+        data.format = getPixelFormat(format);
+        data.bytesLength = stride * height;
+
+        DetectedQuadResultArray *pResults = NULL;
+
+        int ret = DDN_DetectQuadFromBuffer(normalizer, &data, "", &pResults);
+        if (ret)
+        {
+            printf("Detection error: %s\n", DC_GetErrorString(ret));
+        }
+
+        return WrapResults(pResults);
+    }
+
+    FlValue* createNormalizedImage()
+    {
         FlValue* result = fl_value_new_map ();
-
-        Quadrilateral quad;
-        quad.points[0].coordinate[0] = x1;
-        quad.points[0].coordinate[1] = y1;
-        quad.points[1].coordinate[0] = x2;
-        quad.points[1].coordinate[1] = y2;
-        quad.points[2].coordinate[0] = x3;
-        quad.points[2].coordinate[1] = y3;
-        quad.points[3].coordinate[0] = x4;
-        quad.points[3].coordinate[1] = y4;
-
-        int errorCode = DDN_NormalizeFile(normalizer, filename, "", &quad, &imageResult);
-        if (errorCode != DM_OK)
-            printf("%s\r\n", DC_GetErrorString(errorCode));
 
         if (imageResult)
         {
@@ -170,9 +238,9 @@ public:
                     for (int j = 0; j < width; j++)
                     {
                         int index = i * width + j;                  
-                        rgba[index * 4] = data[dataIndex + 2];     // red
+                        rgba[index * 4] = data[dataIndex];     // red
                         rgba[index * 4 + 1] = data[dataIndex + 1]; // green
-                        rgba[index * 4 + 2] = data[dataIndex];     // blue
+                        rgba[index * 4 + 2] = data[dataIndex + 2];     // blue
                         rgba[index * 4 + 3] = 255;                 // alpha
                         dataIndex += 3;
                     }
@@ -220,6 +288,56 @@ public:
         }
 
         return result;
+    }
+
+    FlValue* NormalizeFile(const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    {
+        FreeImage();
+
+        Quadrilateral quad;
+        quad.points[0].coordinate[0] = x1;
+        quad.points[0].coordinate[1] = y1;
+        quad.points[1].coordinate[0] = x2;
+        quad.points[1].coordinate[1] = y2;
+        quad.points[2].coordinate[0] = x3;
+        quad.points[2].coordinate[1] = y3;
+        quad.points[3].coordinate[0] = x4;
+        quad.points[3].coordinate[1] = y4;
+
+        int errorCode = DDN_NormalizeFile(normalizer, filename, "", &quad, &imageResult);
+        if (errorCode != DM_OK)
+            printf("%s\r\n", DC_GetErrorString(errorCode));
+
+        return createNormalizedImage();
+    }
+
+    FlValue* NormalizeBuffer(const unsigned char * buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    {
+        FreeImage();
+
+        ImageData data;
+        data.bytes = (unsigned char *)buffer;
+        data.width = width;
+        data.height = height;
+        data.stride = stride;
+        data.format = getPixelFormat(format);
+        data.bytesLength = stride * height;
+
+        Quadrilateral quad;
+        quad.points[0].coordinate[0] = x1;
+        quad.points[0].coordinate[1] = y1;
+        quad.points[1].coordinate[0] = x2;
+        quad.points[1].coordinate[1] = y2;
+        quad.points[2].coordinate[0] = x3;
+        quad.points[2].coordinate[1] = y3;
+        quad.points[3].coordinate[0] = x4;
+        quad.points[3].coordinate[1] = y4;
+
+        int errorCode = DDN_NormalizeBuffer(normalizer, &data, "", &quad, &imageResult);
+        if (errorCode != DM_OK)
+            printf("%s\r\n", DC_GetErrorString(errorCode));
+
+        return createNormalizedImage();
     }
 
     void binary2grayscale(unsigned char* data, unsigned char* output, int width, int height, int stride, int length) 
