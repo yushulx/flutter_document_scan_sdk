@@ -4,17 +4,19 @@ import 'dart:ui' as ui;
 
 class ImagePainter extends CustomPainter {
   ImagePainter(this.image, this.results);
-  final ui.Image image;
+  ui.Image? image;
   final List<DocumentResult> results;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = Colors.blue
-      ..strokeWidth = 3
+      ..strokeWidth = 5
       ..style = PaintingStyle.stroke;
 
-    canvas.drawImage(image, Offset.zero, paint);
+    if (image != null) {
+      canvas.drawImage(image!, Offset.zero, paint);
+    }
 
     Paint circlePaint = Paint()
       ..color = Colors.red
@@ -26,10 +28,12 @@ class ImagePainter extends CustomPainter {
       canvas.drawLine(result.points[2], result.points[3], paint);
       canvas.drawLine(result.points[3], result.points[0], paint);
 
-      canvas.drawCircle(result.points[0], 10, circlePaint);
-      canvas.drawCircle(result.points[1], 10, circlePaint);
-      canvas.drawCircle(result.points[2], 10, circlePaint);
-      canvas.drawCircle(result.points[3], 10, circlePaint);
+      if (image != null) {
+        canvas.drawCircle(result.points[0], 10, circlePaint);
+        canvas.drawCircle(result.points[1], 10, circlePaint);
+        canvas.drawCircle(result.points[2], 10, circlePaint);
+        canvas.drawCircle(result.points[3], 10, circlePaint);
+      }
     }
   }
 

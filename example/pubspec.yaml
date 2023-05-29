@@ -32,6 +32,10 @@ dependencies:
   image_picker:
   path_provider:
   path:
+  camera_windows: 
+    git:
+      url: https://github.com/yushulx/flutter_camera_windows.git
+  camera: ^0.10.5+2
   
 
 dev_dependencies:

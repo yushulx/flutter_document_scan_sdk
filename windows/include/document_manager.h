@@ -138,10 +138,10 @@ public:
         }
     }
 
-    void queueTask(unsigned char* barcodeBuffer, int width, int height, int stride, int format, int len)
+    void queueTask(unsigned char* imageBuffer, int width, int height, int stride, int format, int len)
     {    
         unsigned char *data = (unsigned char *)malloc(len);
-        memcpy(data, barcodeBuffer, len);
+        memcpy(data, imageBuffer, len);
 
         std::unique_lock<std::mutex> lk(worker->m);
         clearTasks();

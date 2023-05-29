@@ -20,10 +20,10 @@ import 'plugin.dart';
 
 class DocumentPage extends StatefulWidget {
   const DocumentPage(
-      {super.key, required this.detectionResults, required this.file});
+      {super.key, required this.detectionResults, required this.sourceImage});
 
   final List<DocumentResult> detectionResults;
-  final XFile file;
+  final ui.Image sourceImage;
 
   @override
   State<DocumentPage> createState() => _DocumentPageState();
@@ -31,7 +31,7 @@ class DocumentPage extends StatefulWidget {
 
 class _DocumentPageState extends State<DocumentPage> {
   ui.Image? normalizedUiImage;
-  ui.Image? sourceImage;
+
   NormalizedImage? normalizedImage;
   String _pixelFormat = 'grayscale';
 
@@ -48,12 +48,8 @@ class _DocumentPageState extends State<DocumentPage> {
 
   Future<void> initDocumentState() async {
     await flutterDocumentScanSdkPlugin.setParameters(Template.grayscale);
-    if (kIsWeb) {
-      await normalizeFile(widget.file.path, widget.detectionResults[0].points);
-    } else {
-      sourceImage = await loadImage(widget.file);
-      await normalizeBuffer(sourceImage!, widget.detectionResults[0].points);
-    }
+    await normalizeBuffer(
+        widget.sourceImage, widget.detectionResults[0].points);
   }
 
   Widget createCustomImage(
@@ -98,13 +94,8 @@ class _DocumentPageState extends State<DocumentPage> {
                       .setParameters(Template.binary);
 
                   if (widget.detectionResults.isNotEmpty) {
-                    if (kIsWeb) {
-                      await normalizeFile(
-                          widget.file.path, widget.detectionResults[0].points);
-                    } else {
-                      await normalizeBuffer(
-                          sourceImage!, widget.detectionResults[0].points);
-                    }
+                    await normalizeBuffer(
+                        widget.sourceImage, widget.detectionResults[0].points);
                   }
                 },
               ),
@@ -121,13 +112,8 @@ class _DocumentPageState extends State<DocumentPage> {
                       .setParameters(Template.grayscale);
 
                   if (widget.detectionResults.isNotEmpty) {
-                    if (kIsWeb) {
-                      await normalizeFile(
-                          widget.file.path, widget.detectionResults[0].points);
-                    } else {
-                      await normalizeBuffer(
-                          sourceImage!, widget.detectionResults[0].points);
-                    }
+                    await normalizeBuffer(
+                        widget.sourceImage, widget.detectionResults[0].points);
                   }
                 },
               ),
@@ -144,13 +130,8 @@ class _DocumentPageState extends State<DocumentPage> {
                       .setParameters(Template.color);
 
                   if (widget.detectionResults.isNotEmpty) {
-                    if (kIsWeb) {
-                      await normalizeFile(
-                          widget.file.path, widget.detectionResults[0].points);
-                    } else {
-                      await normalizeBuffer(
-                          sourceImage!, widget.detectionResults[0].points);
-                    }
+                    await normalizeBuffer(
+                        widget.sourceImage, widget.detectionResults[0].points);
                   }
                 },
               ),
@@ -184,30 +165,6 @@ class _DocumentPageState extends State<DocumentPage> {
                             }
 
                             await flutterDocumentScanSdkPlugin.save(path);
-                            showDialog<void>(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: const Text('Save'),
-                                  content: SingleChildScrollView(
-                                    child: ListBody(
-                                      children: <Widget>[
-                                        Text('The image is saved to: $path')
-                                      ],
-                                    ),
-                                  ),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      child: const Text('OK'),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
                             // if (normalizedUiImage != null) {
                             //   const String mimeType = 'image/png';
                             //   ByteData? data = await normalizedUiImage!
@@ -227,6 +184,13 @@ class _DocumentPageState extends State<DocumentPage> {
             ],
           )
         ]),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.home),
+        onPressed: () {
+          // Navigator.of(context).popUntil((route) => route.isFirst);
+          Navigator.pushNamed(context, '/');
+        },
       ),
     );
   }
