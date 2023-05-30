@@ -55,7 +55,8 @@ class _ReaderPageState extends State<ReaderPage> {
       return SizedBox(
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height -
-              MediaQuery.of(context).padding.top,
+              MediaQuery.of(context).padding.top -
+              80,
           child: FittedBox(
               fit: BoxFit.contain,
               child: SizedBox(

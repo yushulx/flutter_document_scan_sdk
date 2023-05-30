@@ -17,6 +17,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'image_painter.dart';
 import 'plugin.dart';
+import 'utils.dart';
 
 class DocumentPage extends StatefulWidget {
   const DocumentPage(
@@ -52,14 +53,21 @@ class _DocumentPageState extends State<DocumentPage> {
         widget.sourceImage, widget.detectionResults[0].points);
   }
 
-  Widget createCustomImage(
-      ui.Image image, List<DocumentResult> detectionResults) {
+  Widget createCustomImage(BuildContext context, ui.Image image,
+      List<DocumentResult> detectionResults) {
     return SizedBox(
-        width: image.width.toDouble(),
-        height: image.height.toDouble(),
-        child: CustomPaint(
-          painter: ImagePainter(image, detectionResults),
-        ));
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height -
+            MediaQuery.of(context).padding.top -
+            80,
+        child: FittedBox(
+            fit: BoxFit.contain,
+            child: SizedBox(
+                width: image.width.toDouble(),
+                height: image.height.toDouble(),
+                child: CustomPaint(
+                  painter: ImagePainter(image, detectionResults),
+                ))));
   }
 
   @override
@@ -76,7 +84,7 @@ class _DocumentPageState extends State<DocumentPage> {
               scrollDirection: Axis.horizontal,
               child: normalizedUiImage == null
                   ? Image.asset('images/default.png')
-                  : createCustomImage(normalizedUiImage!, []),
+                  : createCustomImage(context, normalizedUiImage!, []),
             ),
           )),
           Row(
@@ -163,20 +171,23 @@ class _DocumentPageState extends State<DocumentPage> {
                               path = await getSavePath(suggestedName: fileName);
                               path ??= fileName;
                             }
+                            showAlert(
+                                context, 'Save', 'Document saved to ${path}');
 
-                            await flutterDocumentScanSdkPlugin.save(path);
-                            // if (normalizedUiImage != null) {
-                            //   const String mimeType = 'image/png';
-                            //   ByteData? data = await normalizedUiImage!
-                            //       .toByteData(format: ui.ImageByteFormat.png);
-                            //   if (data != null) {
-                            //     final XFile imageFile = XFile.fromData(
-                            //       data.buffer.asUint8List(),
-                            //       mimeType: mimeType,
-                            //     );
-                            //     await imageFile.saveTo(path);
-                            //   }
-                            // }
+                            // await flutterDocumentScanSdkPlugin.save(path);
+
+                            if (normalizedUiImage != null) {
+                              const String mimeType = 'image/png';
+                              ByteData? data = await normalizedUiImage!
+                                  .toByteData(format: ui.ImageByteFormat.png);
+                              if (data != null) {
+                                final XFile imageFile = XFile.fromData(
+                                  data.buffer.asUint8List(),
+                                  mimeType: mimeType,
+                                );
+                                await imageFile.saveTo(path);
+                              }
+                            }
                           },
                           child: const Text("Save Document"))
                     ]),

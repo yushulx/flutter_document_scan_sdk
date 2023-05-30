@@ -202,10 +202,11 @@ class _MobileScannerPageState extends State<MobileScannerPage>
         if (_enableCapture &&
             _detectionResults != null &&
             _detectionResults!.isNotEmpty) {
-          final coordinates = results;
           _enableCapture = false;
           _controller!.stopImageStream();
           _controller!.takePicture().then((XFile file) async {
+            final coordinates =
+                await flutterDocumentScanSdkPlugin.detectFile(file.path);
             final data = await file.readAsBytes();
             decodeImageFromList(data).then((ui.Image value) {
               _documentData = DocumentData(
