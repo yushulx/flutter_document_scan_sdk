@@ -171,10 +171,6 @@ class _DocumentPageState extends State<DocumentPage> {
                               path = await getSavePath(suggestedName: fileName);
                               path ??= fileName;
                             }
-                            showAlert(
-                                context, 'Save', 'Document saved to ${path}');
-
-                            // await flutterDocumentScanSdkPlugin.save(path);
 
                             if (normalizedUiImage != null) {
                               const String mimeType = 'image/png';
@@ -186,7 +182,13 @@ class _DocumentPageState extends State<DocumentPage> {
                                   mimeType: mimeType,
                                 );
                                 await imageFile.saveTo(path);
+                                showAlert(context, 'Save',
+                                    'Document saved to ${path}');
+                                return;
                               }
+
+                              showAlert(
+                                  context, 'Save', 'Failed to save document');
                             }
                           },
                           child: const Text("Save Document"))

@@ -1,3 +1,7 @@
+## 1.0.1
+- Instead of the `save()` method, use Dart APIs to save the image to a file.
+- Added camera scanner to the example code, supporting Windows, Android, iOS and web.
+      
 ## 1.0.0
 - Added `normalizeBuffer()` and `detectBuffer()` for Linux, Android, iOS and web.
 

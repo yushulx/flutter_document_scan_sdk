@@ -51,5 +51,7 @@
 	<string>Load document images from gallery</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Capture documents from camera</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>your usage description here</string>
 </dict>
 </plist>
