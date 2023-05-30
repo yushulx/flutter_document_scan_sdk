@@ -74,7 +74,6 @@ Include the JavaScript library of Dynamsoft Document Normalizer in your `index.h
 | `Future<int?> init(String key)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:      | :heavy_check_mark:      |:heavy_check_mark:      | 
 | `Future<List<DocumentResult>?> detectFile(String file)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:     |
 | `Future<NormalizedImage?> normalizeFile(String file, dynamic points)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:     |
-| `Future<int?> save(String filename)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | 
 | `Future<int?> setParameters(String params)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | 
 | `Future<String?> getParameters()`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | 
 | `Future<List<DocumentResult>?> detectBuffer(Uint8List bytes, int width, int height, int stride, int format)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:      |
@@ -117,11 +116,21 @@ Include the JavaScript library of Dynamsoft Document Normalizer in your `index.h
     NormalizedImage? normalizedImage = await _flutterDocumentScanSdkPlugin.normalizeBuffer(
         bytes, width, height, stride, format, detectionResults[0].points);
     ```
-- Save the document to the local disk:
+- Save the rectified document image to a file:
 
     ```dart
-    await _flutterDocumentScanSdkPlugin
-                                .save('normalized.png');
+    if (normalizedUiImage != null) {
+        const String mimeType = 'image/png';
+        ByteData? data = await normalizedUiImage!
+            .toByteData(format: ui.ImageByteFormat.png);
+        if (data != null) {
+            final XFile imageFile = XFile.fromData(
+                data.buffer.asUint8List(),
+                mimeType: mimeType,
+            );
+            await imageFile.saveTo(path);
+        }
+    }
     ```
 
 

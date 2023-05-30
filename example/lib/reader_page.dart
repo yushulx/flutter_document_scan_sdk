@@ -146,10 +146,7 @@ class _ReaderPageState extends State<ReaderPage> {
                                   acceptedTypeGroups: <XTypeGroup>[typeGroup]);
                             } else if (Platform.isAndroid || Platform.isIOS) {
                               pickedFile = await picker.pickImage(
-                                  source: ImageSource.gallery,
-                                  maxWidth: MediaQuery.of(context).size.width,
-                                  maxHeight:
-                                      MediaQuery.of(context).size.height);
+                                  source: ImageSource.gallery);
                             }
 
                             if (pickedFile != null) {
