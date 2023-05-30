@@ -7,6 +7,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter_document_scan_sdk/document_result.dart';
 import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk_platform_interface.dart';
+import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 
 import 'document_data.dart';
 import 'image_painter.dart';
@@ -205,9 +206,12 @@ class _MobileScannerPageState extends State<MobileScannerPage>
           _enableCapture = false;
           _controller!.stopImageStream();
           _controller!.takePicture().then((XFile file) async {
+            File rotatedImage =
+                await FlutterExifRotation.rotateImage(path: file.path);
+            XFile rotatedFile = XFile(rotatedImage.path);
             final coordinates =
-                await flutterDocumentScanSdkPlugin.detectFile(file.path);
-            final data = await file.readAsBytes();
+                await flutterDocumentScanSdkPlugin.detectFile(rotatedFile.path);
+            final data = await rotatedFile.readAsBytes();
             decodeImageFromList(data).then((ui.Image value) {
               _documentData = DocumentData(
                 image: value,
