@@ -53,47 +53,57 @@ class _ReaderPageState extends State<ReaderPage> {
       return Image.asset('images/default.png');
     } else {
       return SizedBox(
-          width: image!.width.toDouble(),
-          height: image!.height.toDouble(),
-          child: GestureDetector(
-            onPanUpdate: (details) {
-              if (details.localPosition.dx < 0 ||
-                  details.localPosition.dy < 0 ||
-                  details.localPosition.dx > image!.width ||
-                  details.localPosition.dy > image!.height) {
-                return;
-              }
-
-              for (int i = 0; i < detectionResults!.length; i++) {
-                for (int j = 0; j < detectionResults![i].points.length; j++) {
-                  if ((detectionResults![i].points[j] - details.localPosition)
-                          .distance <
-                      20) {
-                    bool isCollided = false;
-                    for (int index = 1; index < 4; index++) {
-                      int otherIndex = (j + 1) % 4;
-                      if ((detectionResults![i].points[otherIndex] -
-                                  details.localPosition)
-                              .distance <
-                          20) {
-                        isCollided = true;
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height -
+              MediaQuery.of(context).padding.top,
+          child: FittedBox(
+              fit: BoxFit.contain,
+              child: SizedBox(
+                  width: image!.width.toDouble(),
+                  height: image!.height.toDouble(),
+                  child: GestureDetector(
+                    onPanUpdate: (details) {
+                      if (details.localPosition.dx < 0 ||
+                          details.localPosition.dy < 0 ||
+                          details.localPosition.dx > image!.width ||
+                          details.localPosition.dy > image!.height) {
                         return;
                       }
-                    }
 
-                    setState(() {
-                      if (!isCollided) {
-                        detectionResults![i].points[j] = details.localPosition;
+                      for (int i = 0; i < detectionResults!.length; i++) {
+                        for (int j = 0;
+                            j < detectionResults![i].points.length;
+                            j++) {
+                          if ((detectionResults![i].points[j] -
+                                      details.localPosition)
+                                  .distance <
+                              20) {
+                            bool isCollided = false;
+                            for (int index = 1; index < 4; index++) {
+                              int otherIndex = (j + 1) % 4;
+                              if ((detectionResults![i].points[otherIndex] -
+                                          details.localPosition)
+                                      .distance <
+                                  20) {
+                                isCollided = true;
+                                return;
+                              }
+                            }
+
+                            setState(() {
+                              if (!isCollided) {
+                                detectionResults![i].points[j] =
+                                    details.localPosition;
+                              }
+                            });
+                          }
+                        }
                       }
-                    });
-                  }
-                }
-              }
-            },
-            child: CustomPaint(
-              painter: ImagePainter(image, detectionResults!),
-            ),
-          ));
+                    },
+                    child: CustomPaint(
+                      painter: ImagePainter(image, detectionResults!),
+                    ),
+                  ))));
     }
   }
 

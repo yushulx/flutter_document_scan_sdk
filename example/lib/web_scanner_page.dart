@@ -150,8 +150,6 @@ class _WebScannerPageState extends State<WebScannerPage>
     return WillPopScope(
         // override the pop action
         onWillPop: () async {
-          _controller!.dispose();
-          _controller = null;
           _isCameraReady = false;
           return true;
         },
