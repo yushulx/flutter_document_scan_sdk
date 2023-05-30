@@ -211,6 +211,7 @@ public:
         data.stride = stride;
         data.format = self->getPixelFormat(format);
         data.bytesLength = stride * height;
+        data.orientation = 0;
 
         DetectedQuadResultArray *pResults = NULL;
         int ret = DDN_DetectQuadFromBuffer(self->normalizer, &data, "", &pResults);
@@ -420,6 +421,7 @@ public:
         data.stride = stride;
         data.format = getPixelFormat(format);
         data.bytesLength = stride * height;
+        data.orientation = 0;
 
         Quadrilateral quad;
         quad.points[0].coordinate[0] = x1;

@@ -194,6 +194,7 @@ public:
         data.stride = stride;
         data.format = getPixelFormat(format);
         data.bytesLength = stride * height;
+        data.orientation = 0;
 
         DetectedQuadResultArray *pResults = NULL;
 
@@ -322,6 +323,7 @@ public:
         data.stride = stride;
         data.format = getPixelFormat(format);
         data.bytesLength = stride * height;
+        data.orientation = 0;
 
         Quadrilateral quad;
         quad.points[0].coordinate[0] = x1;

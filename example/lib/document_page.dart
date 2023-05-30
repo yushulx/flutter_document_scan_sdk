@@ -171,23 +171,29 @@ class _DocumentPageState extends State<DocumentPage> {
                               path = await getSavePath(suggestedName: fileName);
                               path ??= fileName;
                             }
-                            showAlert(
-                                context, 'Save', 'Document saved to ${path}');
 
-                            // await flutterDocumentScanSdkPlugin.save(path);
-
-                            if (normalizedUiImage != null) {
-                              const String mimeType = 'image/png';
-                              ByteData? data = await normalizedUiImage!
-                                  .toByteData(format: ui.ImageByteFormat.png);
-                              if (data != null) {
-                                final XFile imageFile = XFile.fromData(
-                                  data.buffer.asUint8List(),
-                                  mimeType: mimeType,
-                                );
-                                await imageFile.saveTo(path);
-                              }
+                            int? ret =
+                                await flutterDocumentScanSdkPlugin.save(path);
+                            if (ret != 0) {
+                              showAlert(
+                                  context, 'Save', 'Failed to save document');
+                            } else {
+                              showAlert(
+                                  context, 'Save', 'Document saved to ${path}');
                             }
+
+                            // if (normalizedUiImage != null) {
+                            //   const String mimeType = 'image/png';
+                            //   ByteData? data = await normalizedUiImage!
+                            //       .toByteData(format: ui.ImageByteFormat.png);
+                            //   if (data != null) {
+                            //     final XFile imageFile = XFile.fromData(
+                            //       data.buffer.asUint8List(),
+                            //       mimeType: mimeType,
+                            //     );
+                            //     await imageFile.saveTo(path);
+                            //   }
+                            // }
                           },
                           child: const Text("Save Document"))
                     ]),
