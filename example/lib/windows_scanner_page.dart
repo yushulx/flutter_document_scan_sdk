@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:camera_platform_interface/camera_platform_interface.dart';
 import 'package:camera_windows/camera_windows.dart';
@@ -23,7 +24,8 @@ class WindowsScannerPage extends StatefulWidget {
   State<WindowsScannerPage> createState() => _WindowsScannerPageState();
 }
 
-class _WindowsScannerPageState extends State<WindowsScannerPage> {
+class _WindowsScannerPageState extends State<WindowsScannerPage>
+    with WidgetsBindingObserver {
   List<CameraDescription> _cameras = <CameraDescription>[];
   String _selectedItem = '';
   final List<String> _cameraNames = [];
@@ -36,7 +38,7 @@ class _WindowsScannerPageState extends State<WindowsScannerPage> {
   bool _isScanAvailable = true;
   final ResolutionPreset _resolutionPreset = ResolutionPreset.veryHigh;
   bool _loading = true;
-  List<DocumentResult>? detectionResults = [];
+  List<DocumentResult>? _detectionResults = [];
   DocumentData? _documentData;
   bool _enableCapture = false;
 
@@ -45,6 +47,7 @@ class _WindowsScannerPageState extends State<WindowsScannerPage> {
     super.initState();
     WidgetsFlutterBinding.ensureInitialized();
     initCamera();
+    WidgetsBinding.instance.addObserver(this);
   }
 
   Future<void> initCamera() async {
@@ -107,7 +110,7 @@ class _WindowsScannerPageState extends State<WindowsScannerPage> {
             .detectBuffer(data, width, height, width * 4,
                 ImagePixelFormat.IPF_ARGB_8888.index)
             .then((results) {
-          detectionResults = results;
+          _detectionResults = results;
           _isScanAvailable = true;
           setState(() {});
 
@@ -117,9 +120,8 @@ class _WindowsScannerPageState extends State<WindowsScannerPage> {
                 .then((ui.Image value) {
               _documentData = DocumentData(
                 image: value,
-                detectionResults: detectionResults,
+                detectionResults: _detectionResults,
               );
-              _disposeCurrentCamera();
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -233,6 +235,12 @@ class _WindowsScannerPageState extends State<WindowsScannerPage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    destroyCamera();
+    super.dispose();
+  }
+
+  void destroyCamera() {
     _disposeCurrentCamera();
     _errorStreamSubscription?.cancel();
     _errorStreamSubscription = null;
@@ -240,7 +248,16 @@ class _WindowsScannerPageState extends State<WindowsScannerPage> {
     _cameraClosingStreamSubscription = null;
     _frameAvailableStreamSubscription?.cancel();
     _frameAvailableStreamSubscription = null;
-    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      initCamera();
+    } else if (state == AppLifecycleState.paused) {
+      destroyCamera();
+    }
   }
 
   @override
@@ -289,8 +306,8 @@ class _WindowsScannerPageState extends State<WindowsScannerPage> {
                               right: 0.0,
                               bottom: 0.0,
                               left: 0.0,
-                              child: detectionResults == null ||
-                                      detectionResults!.isEmpty
+                              child: _detectionResults == null ||
+                                      _detectionResults!.isEmpty
                                   ? Container(
                                       color: Colors.black.withOpacity(0.1),
                                       child: const Center(
@@ -304,8 +321,8 @@ class _WindowsScannerPageState extends State<WindowsScannerPage> {
                                         ),
                                       ))
                                   : CustomPaint(
-                                      painter:
-                                          ImagePainter(null, detectionResults!),
+                                      painter: ImagePainter(
+                                          null, _detectionResults!),
                                     ),
                             ),
                           ],

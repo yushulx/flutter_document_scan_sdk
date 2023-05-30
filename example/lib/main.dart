@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -7,7 +9,10 @@ import 'package:flutter_document_scan_sdk_example/reader_page.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'plugin.dart';
+import 'web_scanner_page.dart';
 import 'windows_scanner_page.dart';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() {
   runApp(const MyApp());
@@ -24,15 +29,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const MyHomePage(title: 'Flutter Demo Home Page'),
-        '/reader': (context) => const ReaderPage(title: 'Document Reader'),
-        '/scanner': (context) => const WindowsScannerPage(
-              title: 'Document Scanner',
-            ),
-      },
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -97,14 +94,26 @@ class _MyHomePageState extends State<MyHomePage> {
               textColor: Colors.white,
               color: Colors.blue,
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const WindowsScannerPage(
-                      title: 'Document Scanner',
+                if (kIsWeb) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const WebScannerPage(
+                        title: 'Document Scanner',
+                      ),
                     ),
-                  ),
-                );
+                  );
+                } else if (Platform.isAndroid || Platform.isIOS) {
+                } else if (Platform.isWindows) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const WindowsScannerPage(
+                        title: 'Document Scanner',
+                      ),
+                    ),
+                  );
+                }
               },
               child: const Text('Document Scanner')),
         ]),
