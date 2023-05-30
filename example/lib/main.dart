@@ -8,6 +8,7 @@ import 'dart:ui' as ui;
 import 'package:flutter_document_scan_sdk_example/reader_page.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'mobile_scanner_page.dart';
 import 'plugin.dart';
 import 'web_scanner_page.dart';
 import 'windows_scanner_page.dart';
@@ -104,6 +105,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   );
                 } else if (Platform.isAndroid || Platform.isIOS) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MobileScannerPage(
+                        title: 'Document Scanner',
+                      ),
+                    ),
+                  );
                 } else if (Platform.isWindows) {
                   Navigator.push(
                     context,

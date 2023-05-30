@@ -185,12 +185,6 @@ class _DocumentPageState extends State<DocumentPage> {
           )
         ]),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.home),
-        onPressed: () {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        },
-      ),
     );
   }
 

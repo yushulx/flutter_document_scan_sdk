@@ -99,17 +99,19 @@ class _WebScannerPageState extends State<WebScannerPage>
       XFile file = await _controller!.takePicture();
       _detectionResults =
           await flutterDocumentScanSdkPlugin.detectFile(file.path);
+      if (!mounted) return;
       setState(() {});
 
       if (_enableCapture &&
           _detectionResults != null &&
           _detectionResults!.isNotEmpty) {
         _enableCapture = false;
+        final coordinates = _detectionResults;
         final data = await file.readAsBytes();
         decodeImageFromList(data).then((ui.Image value) {
           _documentData = DocumentData(
             image: value,
-            detectionResults: _detectionResults,
+            detectionResults: coordinates,
           );
           Navigator.push(
             context,

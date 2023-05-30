@@ -114,13 +114,16 @@ class _WindowsScannerPageState extends State<WindowsScannerPage>
           _isScanAvailable = true;
           setState(() {});
 
-          if (_enableCapture) {
+          if (_enableCapture &&
+              _detectionResults != null &&
+              _detectionResults!.isNotEmpty) {
             _enableCapture = false;
+            final coordinates = _detectionResults;
             createImage(data, width, height, ui.PixelFormat.rgba8888)
                 .then((ui.Image value) {
               _documentData = DocumentData(
                 image: value,
-                detectionResults: _detectionResults,
+                detectionResults: coordinates,
               );
               Navigator.push(
                 context,
