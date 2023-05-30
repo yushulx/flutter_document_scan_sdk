@@ -5,7 +5,7 @@ homepage: https://www.dynamsoft.com/document-normalizer/docs/introduction/
 repository: https://github.com/yushulx/flutter_document_scan_sdk
 
 environment:
-  sdk: '>=2.18.2 <3.0.0'
+  sdk: '>=2.18.2 <4.0.0'
   flutter: ">=2.5.0"
 
 dependencies:
