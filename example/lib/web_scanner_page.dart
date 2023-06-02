@@ -213,7 +213,7 @@ class _WebScannerPageState extends State<WebScannerPage>
                       alignment:
                           _loading ? Alignment.center : Alignment.topCenter,
                       child: _loading
-                          ? const Column(
+                          ? Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
                                 CircularProgressIndicator(),
