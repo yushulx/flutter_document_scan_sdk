@@ -34,3 +34,55 @@ Future<ui.Image> createImage(
 
   return completer.future;
 }
+
+Uint8List yuv420ToRgba8888(List<Uint8List> planes, int width, int height) {
+  final yPlane = planes[0];
+  final uPlane = planes[1];
+  final vPlane = planes[2];
+
+  final Uint8List rgbaBytes = Uint8List(width * height * 4);
+
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      final int yIndex = y * width + x;
+      final int uvIndex = (y ~/ 2) * (width ~/ 2) + (x ~/ 2);
+
+      final int yValue = yPlane[yIndex] & 0xFF;
+      final int uValue = uPlane[uvIndex] & 0xFF;
+      final int vValue = vPlane[uvIndex] & 0xFF;
+
+      final int r = (yValue + 1.13983 * (vValue - 128)).round().clamp(0, 255);
+      final int g =
+          (yValue - 0.39465 * (uValue - 128) - 0.58060 * (vValue - 128))
+              .round()
+              .clamp(0, 255);
+      final int b = (yValue + 2.03211 * (uValue - 128)).round().clamp(0, 255);
+
+      final int rgbaIndex = yIndex * 4;
+      rgbaBytes[rgbaIndex] = r.toUnsigned(8);
+      rgbaBytes[rgbaIndex + 1] = g.toUnsigned(8);
+      rgbaBytes[rgbaIndex + 2] = b.toUnsigned(8);
+      rgbaBytes[rgbaIndex + 3] = 255; // Alpha value
+    }
+  }
+
+  return rgbaBytes;
+}
+
+Uint8List rotate90Degrees(Uint8List src, int width, int height) {
+  var dst = Uint8List(4 * width * height);
+  int newIndex = 0;
+
+  for (int j = 0; j < width; j++) {
+    for (int i = height - 1; i >= 0; i--) {
+      int oldIndex = 4 * (i * width + j);
+      dst[newIndex] = src[oldIndex];
+      dst[newIndex + 1] = src[oldIndex + 1];
+      dst[newIndex + 2] = src[oldIndex + 2];
+      dst[newIndex + 3] = src[oldIndex + 3];
+      newIndex += 4;
+    }
+  }
+
+  return dst;
+}
