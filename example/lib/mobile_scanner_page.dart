@@ -183,38 +183,47 @@ class _MobileScannerPageState extends State<MobileScannerPage>
 
       _isScanAvailable = false;
 
-      List<Uint8List> planes = [];
-      for (int planeIndex = 0; planeIndex < 3; planeIndex++) {
-        Uint8List buffer;
-        int width;
-        int height;
-        if (planeIndex == 0) {
-          width = availableImage.width;
-          height = availableImage.height;
-        } else {
-          width = availableImage.width ~/ 2;
-          height = availableImage.height ~/ 2;
-        }
-
-        buffer = Uint8List(width * height);
-
-        int pixelStride = availableImage.planes[planeIndex].bytesPerPixel!;
-        int rowStride = availableImage.planes[planeIndex].bytesPerRow;
-        int index = 0;
-        for (int i = 0; i < height; i++) {
-          for (int j = 0; j < width; j++) {
-            buffer[index++] = availableImage
-                .planes[planeIndex].bytes[i * rowStride + j * pixelStride];
-          }
-        }
-
-        planes.add(buffer);
-      }
-
+      Uint8List imageBuffer = availableImage.planes[0].bytes;
       int imageWidth = availableImage.width;
       int imageHeight = availableImage.height;
+      int imageStride = availableImage.planes[0].bytesPerRow;
+      List<Uint8List> planes = [];
+
+      if (format == ImagePixelFormat.IPF_NV21.index) {
+        for (int planeIndex = 0; planeIndex < 3; planeIndex++) {
+          Uint8List buffer;
+          int width;
+          int height;
+          if (planeIndex == 0) {
+            width = availableImage.width;
+            height = availableImage.height;
+          } else {
+            width = availableImage.width ~/ 2;
+            height = availableImage.height ~/ 2;
+          }
+
+          buffer = Uint8List(width * height);
+
+          int pixelStride = availableImage.planes[planeIndex].bytesPerPixel!;
+          int rowStride = availableImage.planes[planeIndex].bytesPerRow;
+          int index = 0;
+          for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+              buffer[index++] = availableImage
+                  .planes[planeIndex].bytes[i * rowStride + j * pixelStride];
+            }
+          }
+
+          planes.add(buffer);
+        }
+
+        imageBuffer = planes[0];
+        imageStride = availableImage.width;
+      }
+
       flutterDocumentScanSdkPlugin
-          .detectBuffer(planes[0], imageWidth, imageHeight, imageWidth, format)
+          .detectBuffer(
+              imageBuffer, imageWidth, imageHeight, imageStride, format)
           .then((results) {
         if (MediaQuery.of(context).size.width <
             MediaQuery.of(context).size.height) {
@@ -234,15 +243,21 @@ class _MobileScannerPageState extends State<MobileScannerPage>
 
           final coordinates = results;
 
-          Uint8List data = yuv420ToRgba8888(planes, imageWidth, imageHeight);
-          if (MediaQuery.of(context).size.width <
-              MediaQuery.of(context).size.height) {
-            if (Platform.isAndroid) {
-              data = rotate90Degrees(data, imageWidth, imageHeight);
-              imageWidth = availableImage.height;
-              imageHeight = availableImage.width;
+          Uint8List data;
+          if (format == ImagePixelFormat.IPF_NV21.index) {
+            data = yuv420ToRgba8888(planes, imageWidth, imageHeight);
+            if (MediaQuery.of(context).size.width <
+                MediaQuery.of(context).size.height) {
+              if (Platform.isAndroid) {
+                data = rotate90Degrees(data, imageWidth, imageHeight);
+                imageWidth = availableImage.height;
+                imageHeight = availableImage.width;
+              }
             }
+          } else {
+            data = imageBuffer;
           }
+
           createImage(data, imageWidth, imageHeight, ui.PixelFormat.rgba8888)
               .then((ui.Image value) {
             _documentData = DocumentData(
