@@ -120,6 +120,24 @@ class _MobileScannerPageState extends State<MobileScannerPage>
     }
   }
 
+  List<DocumentResult> filterResults(
+      List<DocumentResult>? input, int width, int height) {
+    if (input == null) {
+      return [];
+    }
+    int imageArea = width * height;
+
+    List<DocumentResult> output = [];
+    for (DocumentResult result in input) {
+      if (calculateArea(result.points[0], result.points[1], result.points[2],
+              result.points[3]) >
+          imageArea / 2) {
+        output.add(result);
+      }
+    }
+    return output;
+  }
+
   List<DocumentResult> rotate90(List<DocumentResult>? input) {
     if (input == null) {
       return [];
@@ -192,6 +210,14 @@ class _MobileScannerPageState extends State<MobileScannerPage>
           .detectBuffer(availableImage.planes[0].bytes, imageWidth, imageHeight,
               availableImage.planes[0].bytesPerRow, format)
           .then((results) {
+        results = filterResults(results, imageWidth, imageHeight);
+        if (results.isEmpty) {
+          setState(() {
+            _detectionResults = results;
+          });
+          _isScanAvailable = true;
+          return;
+        }
         if (MediaQuery.of(context).size.width <
             MediaQuery.of(context).size.height) {
           if (Platform.isAndroid) {
@@ -204,7 +230,7 @@ class _MobileScannerPageState extends State<MobileScannerPage>
 
         _isScanAvailable = true;
 
-        if (_enableCapture && results != null && results.isNotEmpty) {
+        if (_enableCapture && results.isNotEmpty) {
           if (format == ImagePixelFormat.IPF_NV21.index) {}
 
           _enableCapture = false;

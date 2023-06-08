@@ -4,6 +4,27 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 
+import 'dart:math' as math;
+
+double calculateArea(Offset p1, Offset p2, Offset p3, Offset p4) {
+  double area1 = calculateTriangleArea(p1, p2, p3);
+  double area2 = calculateTriangleArea(p1, p3, p4);
+
+  return area1 + area2;
+}
+
+double calculateTriangleArea(Offset p1, Offset p2, Offset p3) {
+  double a = distanceBetween(p1, p2);
+  double b = distanceBetween(p2, p3);
+  double c = distanceBetween(p3, p1);
+  double s = (a + b + c) / 2;
+  return math.sqrt(s * (s - a) * (s - b) * (s - c));
+}
+
+double distanceBetween(Offset p1, Offset p2) {
+  return math.sqrt(math.pow(p2.dx - p1.dx, 2) + math.pow(p2.dy - p1.dy, 2));
+}
+
 void showAlert(BuildContext context, String title, String content) {
   showDialog(
     context: context,
