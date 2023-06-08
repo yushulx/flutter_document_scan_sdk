@@ -1,3 +1,6 @@
+## 1.0.2
+- Updated DDN Android to v1.0.30.
+
 ## 1.0.1
 - Instead of the `save()` method, use Dart APIs to save the image to a file.
 - Added camera scanner to the example code, supporting Windows, Android, iOS and web.
