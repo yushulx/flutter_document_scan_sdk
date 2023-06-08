@@ -74,5 +74,5 @@
         "deque": "cpp",
         "queue": "cpp"
     },
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "automatic"
 }

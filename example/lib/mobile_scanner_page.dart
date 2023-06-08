@@ -186,44 +186,11 @@ class _MobileScannerPageState extends State<MobileScannerPage>
       Uint8List imageBuffer = availableImage.planes[0].bytes;
       int imageWidth = availableImage.width;
       int imageHeight = availableImage.height;
-      int imageStride = availableImage.planes[0].bytesPerRow;
       List<Uint8List> planes = [];
 
-      if (format == ImagePixelFormat.IPF_NV21.index) {
-        for (int planeIndex = 0; planeIndex < 3; planeIndex++) {
-          Uint8List buffer;
-          int width;
-          int height;
-          if (planeIndex == 0) {
-            width = availableImage.width;
-            height = availableImage.height;
-          } else {
-            width = availableImage.width ~/ 2;
-            height = availableImage.height ~/ 2;
-          }
-
-          buffer = Uint8List(width * height);
-
-          int pixelStride = availableImage.planes[planeIndex].bytesPerPixel!;
-          int rowStride = availableImage.planes[planeIndex].bytesPerRow;
-          int index = 0;
-          for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-              buffer[index++] = availableImage
-                  .planes[planeIndex].bytes[i * rowStride + j * pixelStride];
-            }
-          }
-
-          planes.add(buffer);
-        }
-
-        imageBuffer = planes[0];
-        imageStride = availableImage.width;
-      }
-
       flutterDocumentScanSdkPlugin
-          .detectBuffer(
-              imageBuffer, imageWidth, imageHeight, imageStride, format)
+          .detectBuffer(availableImage.planes[0].bytes, imageWidth, imageHeight,
+              availableImage.planes[0].bytesPerRow, format)
           .then((results) {
         if (MediaQuery.of(context).size.width <
             MediaQuery.of(context).size.height) {
@@ -238,6 +205,8 @@ class _MobileScannerPageState extends State<MobileScannerPage>
         _isScanAvailable = true;
 
         if (_enableCapture && results != null && results.isNotEmpty) {
+          if (format == ImagePixelFormat.IPF_NV21.index) {}
+
           _enableCapture = false;
           _controller!.stopImageStream();
 
@@ -245,6 +214,35 @@ class _MobileScannerPageState extends State<MobileScannerPage>
 
           Uint8List data;
           if (format == ImagePixelFormat.IPF_NV21.index) {
+            for (int planeIndex = 0; planeIndex < 3; planeIndex++) {
+              Uint8List buffer;
+              int width;
+              int height;
+              if (planeIndex == 0) {
+                width = availableImage.width;
+                height = availableImage.height;
+              } else {
+                width = availableImage.width ~/ 2;
+                height = availableImage.height ~/ 2;
+              }
+
+              buffer = Uint8List(width * height);
+
+              int pixelStride =
+                  availableImage.planes[planeIndex].bytesPerPixel!;
+              int rowStride = availableImage.planes[planeIndex].bytesPerRow;
+              int index = 0;
+              for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                  buffer[index++] = availableImage.planes[planeIndex]
+                      .bytes[i * rowStride + j * pixelStride];
+                }
+              }
+
+              planes.add(buffer);
+            }
+
+            imageBuffer = planes[0];
             data = yuv420ToRgba8888(planes, imageWidth, imageHeight);
             if (MediaQuery.of(context).size.width <
                 MediaQuery.of(context).size.height) {
