@@ -74,5 +74,6 @@
         "deque": "cpp",
         "queue": "cpp"
     },
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "editor.formatOnSave": true
 }

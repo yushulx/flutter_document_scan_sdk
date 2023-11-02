@@ -27,7 +27,6 @@ class _MobileScannerPageState extends State<MobileScannerPage>
     with WidgetsBindingObserver {
   late List<CameraDescription> _cameras;
   CameraController? _controller;
-  final List<String> _cameraNames = [''];
   List<DocumentResult>? _detectionResults = [];
   Size? _previewSize;
   DocumentData? _documentData;
@@ -201,86 +200,66 @@ class _MobileScannerPageState extends State<MobileScannerPage>
 
       _isScanAvailable = false;
 
-      Uint8List imageBuffer = availableImage.planes[0].bytes;
       int imageWidth = availableImage.width;
       int imageHeight = availableImage.height;
       List<Uint8List> planes = [];
+      Uint8List data;
+      if (format == ImagePixelFormat.IPF_NV21.index) {
+        for (int planeIndex = 0; planeIndex < 3; planeIndex++) {
+          Uint8List buffer;
+          int width;
+          int height;
+          if (planeIndex == 0) {
+            width = availableImage.width;
+            height = availableImage.height;
+          } else {
+            width = availableImage.width ~/ 2;
+            height = availableImage.height ~/ 2;
+          }
 
-      flutterDocumentScanSdkPlugin
-          .detectBuffer(availableImage.planes[0].bytes, imageWidth, imageHeight,
-              availableImage.planes[0].bytesPerRow, format)
-          .then((results) {
-        results = filterResults(results, imageWidth, imageHeight);
-        if (results.isEmpty) {
-          setState(() {
-            _detectionResults = results;
-          });
-          _isScanAvailable = true;
-          return;
+          buffer = Uint8List(width * height);
+
+          int pixelStride = availableImage.planes[planeIndex].bytesPerPixel!;
+          int rowStride = availableImage.planes[planeIndex].bytesPerRow;
+          int index = 0;
+          for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+              buffer[index++] = availableImage
+                  .planes[planeIndex].bytes[i * rowStride + j * pixelStride];
+            }
+          }
+
+          planes.add(buffer);
         }
+
+        data = yuv420ToRgba8888(planes, imageWidth, imageHeight);
+        format = ImagePixelFormat.IPF_ARGB_8888.index;
         if (MediaQuery.of(context).size.width <
             MediaQuery.of(context).size.height) {
           if (Platform.isAndroid) {
-            results = rotate90(results);
+            data = rotate90Degrees(data, imageWidth, imageHeight);
+            imageWidth = availableImage.height;
+            imageHeight = availableImage.width;
           }
         }
+      } else {
+        data = planes[0];
+      }
+
+      flutterDocumentScanSdkPlugin
+          .detectBuffer(data, imageWidth, imageHeight, imageWidth * 4, format)
+          .then((results) {
         setState(() {
           _detectionResults = results;
         });
 
         _isScanAvailable = true;
 
-        if (_enableCapture && results.isNotEmpty) {
-          if (format == ImagePixelFormat.IPF_NV21.index) {}
-
+        if (_enableCapture && results != null && results.isNotEmpty) {
           _enableCapture = false;
           _controller!.stopImageStream();
 
           final coordinates = results;
-
-          Uint8List data;
-          if (format == ImagePixelFormat.IPF_NV21.index) {
-            for (int planeIndex = 0; planeIndex < 3; planeIndex++) {
-              Uint8List buffer;
-              int width;
-              int height;
-              if (planeIndex == 0) {
-                width = availableImage.width;
-                height = availableImage.height;
-              } else {
-                width = availableImage.width ~/ 2;
-                height = availableImage.height ~/ 2;
-              }
-
-              buffer = Uint8List(width * height);
-
-              int pixelStride =
-                  availableImage.planes[planeIndex].bytesPerPixel!;
-              int rowStride = availableImage.planes[planeIndex].bytesPerRow;
-              int index = 0;
-              for (int i = 0; i < height; i++) {
-                for (int j = 0; j < width; j++) {
-                  buffer[index++] = availableImage.planes[planeIndex]
-                      .bytes[i * rowStride + j * pixelStride];
-                }
-              }
-
-              planes.add(buffer);
-            }
-
-            imageBuffer = planes[0];
-            data = yuv420ToRgba8888(planes, imageWidth, imageHeight);
-            if (MediaQuery.of(context).size.width <
-                MediaQuery.of(context).size.height) {
-              if (Platform.isAndroid) {
-                data = rotate90Degrees(data, imageWidth, imageHeight);
-                imageWidth = availableImage.height;
-                imageHeight = availableImage.width;
-              }
-            }
-          } else {
-            data = imageBuffer;
-          }
 
           createImage(data, imageWidth, imageHeight, ui.PixelFormat.rgba8888)
               .then((ui.Image value) {
@@ -297,29 +276,6 @@ class _MobileScannerPageState extends State<MobileScannerPage>
                       )),
             ).then((value) => startVideo());
           });
-
-          // _controller!.takePicture().then((XFile file) async {
-          //   File rotatedImage =
-          //       await FlutterExifRotation.rotateImage(path: file.path);
-          //   XFile rotatedFile = XFile(rotatedImage.path);
-          //   final coordinates =
-          //       await flutterDocumentScanSdkPlugin.detectFile(rotatedFile.path);
-          //   final data = await rotatedFile.readAsBytes();
-          //   decodeImageFromList(data).then((ui.Image value) {
-          //     _documentData = DocumentData(
-          //       image: value,
-          //       detectionResults: coordinates,
-          //     );
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //           builder: (context) => ReaderPage(
-          //                 title: 'Document Editor',
-          //                 documentData: _documentData,
-          //               )),
-          //     ).then((value) => startVideo());
-          //   });
-          // });
         }
       }).catchError((error) {
         _isScanAvailable = true;
