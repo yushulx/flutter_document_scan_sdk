@@ -1,3 +1,6 @@
+## 1.0.3
+- Fixed dependency issue for iOS.
+
 ## 1.0.2
 - Updated DDN Android to v1.0.30.
 
