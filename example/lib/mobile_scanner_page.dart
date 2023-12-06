@@ -243,7 +243,7 @@ class _MobileScannerPageState extends State<MobileScannerPage>
           }
         }
       } else {
-        data = planes[0];
+        data = availableImage.planes[0].bytes;
       }
 
       flutterDocumentScanSdkPlugin
