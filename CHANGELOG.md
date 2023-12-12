@@ -1,3 +1,6 @@
+## 1.1.0
+- Updated DDN iOS to v1.0.30.
+
 ## 1.0.3
 - Fixed dependency issue for iOS.
 
