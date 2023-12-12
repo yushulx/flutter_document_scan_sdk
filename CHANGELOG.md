@@ -1,3 +1,6 @@
+## 1.1.1
+- Adjusted the `ThresholdCompensation` value from 9 to 10 in the template file.
+
 ## 1.1.0
 - Updated DDN iOS to v1.0.30.
 

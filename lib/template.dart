@@ -9,7 +9,7 @@ class Template {
             {
                 "Name":"IP-1",
                 "NormalizerParameterName":"NP-1",
-                "BinarizationModes":[{"Mode":"BM_LOCAL_BLOCK", "ThresholdCompensation":9}],
+                "BinarizationModes":[{"Mode":"BM_LOCAL_BLOCK", "ThresholdCompensation":10}],
                 "ScaleDownThreshold":2300
             }
         ],
@@ -31,7 +31,7 @@ class Template {
             {
                 "Name":"IP-1",
                 "NormalizerParameterName":"NP-1",
-                "BinarizationModes":[{"Mode":"BM_LOCAL_BLOCK", "ThresholdCompensation":9}],
+                "BinarizationModes":[{"Mode":"BM_LOCAL_BLOCK", "ThresholdCompensation":10}],
                 "ScaleDownThreshold":2300
             }
         ],
@@ -53,7 +53,7 @@ class Template {
             {
                 "Name":"IP-1",
                 "NormalizerParameterName":"NP-1",
-                "BinarizationModes":[{"Mode":"BM_LOCAL_BLOCK", "ThresholdCompensation":9}],
+                "BinarizationModes":[{"Mode":"BM_LOCAL_BLOCK", "ThresholdCompensation":10}],
                 "ScaleDownThreshold":2300
             }
         ],
