@@ -199,7 +199,7 @@ class _MobileScannerPageState extends State<MobileScannerPage>
       }
 
       _isScanAvailable = false;
-
+      int stride = availableImage.planes[0].bytesPerRow;
       int imageWidth = availableImage.width;
       int imageHeight = availableImage.height;
       List<Uint8List> planes = [];
@@ -242,12 +242,13 @@ class _MobileScannerPageState extends State<MobileScannerPage>
             imageHeight = availableImage.width;
           }
         }
+        stride = imageWidth * 4;
       } else {
         data = availableImage.planes[0].bytes;
       }
 
       flutterDocumentScanSdkPlugin
-          .detectBuffer(data, imageWidth, imageHeight, imageWidth * 4, format)
+          .detectBuffer(data, imageWidth, imageHeight, stride, format)
           .then((results) {
         setState(() {
           _detectionResults = results;
@@ -261,7 +262,8 @@ class _MobileScannerPageState extends State<MobileScannerPage>
 
           final coordinates = results;
 
-          createImage(data, imageWidth, imageHeight, ui.PixelFormat.rgba8888)
+          createImage(data, imageWidth, imageHeight, ui.PixelFormat.rgba8888,
+                  stride)
               .then((ui.Image value) {
             _documentData = DocumentData(
               image: value,

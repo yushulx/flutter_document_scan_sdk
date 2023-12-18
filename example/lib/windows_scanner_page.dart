@@ -119,7 +119,7 @@ class _WindowsScannerPageState extends State<WindowsScannerPage>
               _detectionResults!.isNotEmpty) {
             _enableCapture = false;
             final coordinates = _detectionResults;
-            createImage(data, width, height, ui.PixelFormat.rgba8888)
+            createImage(data, width, height, ui.PixelFormat.rgba8888, width * 4)
                 .then((ui.Image value) {
               _documentData = DocumentData(
                 image: value,
