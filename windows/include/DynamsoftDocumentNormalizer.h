@@ -16,7 +16,7 @@
 #else
 #include "DynamsoftCore.h"
 #endif
-#define DDN_VERSION                  "1.0.10.0929"
+#define DDN_VERSION                  "1.0.30.0602"
 
 #pragma pack(push)
 #pragma pack(1)

@@ -1,7 +1,6 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.dynamsoft.flutter_document_scan_sdk_example">
-   <application
-        android:label="flutter_document_scan_sdk_example"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
+        android:label="documentscanner"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

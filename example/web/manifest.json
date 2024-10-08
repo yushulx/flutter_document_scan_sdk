@@ -1,11 +1,11 @@
 {
-    "name": "flutter_document_scan_sdk_example",
-    "short_name": "flutter_document_scan_sdk_example",
+    "name": "documentscanner",
+    "short_name": "documentscanner",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "Demonstrates how to use the flutter_document_scan_sdk plugin.",
+    "description": "A new Flutter project.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

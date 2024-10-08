@@ -28,7 +28,7 @@ class Task
 {
 public:
     std::function<void()> func;
-    unsigned char* buffer;
+    unsigned char *buffer;
 };
 
 class WorkerThread
@@ -74,7 +74,7 @@ public:
         {
             std::unique_lock<std::mutex> lk(worker->m);
             worker->running = false;
-            
+
             clearTasks();
 
             worker->cv.notify_one();
@@ -125,7 +125,7 @@ public:
             std::function<void()> task;
             std::unique_lock<std::mutex> lk(self->worker->m);
             self->worker->cv.wait(lk, [&]
-                                { return !self->worker->tasks.empty() || !self->worker->running; });
+                                  { return !self->worker->tasks.empty() || !self->worker->running; });
             if (!self->worker->running)
             {
                 break;
@@ -138,8 +138,8 @@ public:
         }
     }
 
-    void queueTask(unsigned char* imageBuffer, int width, int height, int stride, int format, int len)
-    {    
+    void queueTask(unsigned char *imageBuffer, int width, int height, int stride, int format, int len)
+    {
         unsigned char *data = (unsigned char *)malloc(len);
         memcpy(data, imageBuffer, len);
 
@@ -157,52 +157,53 @@ public:
     ImagePixelFormat getPixelFormat(int format)
     {
         ImagePixelFormat pixelFormat = IPF_BGR_888;
-        switch(format) {
-            case 0:
-                pixelFormat = IPF_BINARY;
-                break;
-            case 1:
-                pixelFormat = IPF_BINARYINVERTED;
-                break;
-            case 2:
-                pixelFormat = IPF_GRAYSCALED;
-                break;
-            case 3:
-                pixelFormat = IPF_NV21;
-                break;
-            case 4:
-                pixelFormat = IPF_RGB_565;
-                break;
-            case 5:
-                pixelFormat = IPF_RGB_555;
-                break;
-            case 6:
-                pixelFormat = IPF_RGB_888;
-                break;
-            case 7:
-                pixelFormat = IPF_ARGB_8888;
-                break;
-            case 8:
-                pixelFormat = IPF_RGB_161616;
-                break;
-            case 9: 
-                pixelFormat = IPF_ARGB_16161616;
-                break;
-            case 10:
-                pixelFormat = IPF_ABGR_8888;
-                break;
-            case 11:
-                pixelFormat = IPF_ABGR_16161616;
-                break;
-            case 12:
-                pixelFormat = IPF_BGR_888;
-                break;
+        switch (format)
+        {
+        case 0:
+            pixelFormat = IPF_BINARY;
+            break;
+        case 1:
+            pixelFormat = IPF_BINARYINVERTED;
+            break;
+        case 2:
+            pixelFormat = IPF_GRAYSCALED;
+            break;
+        case 3:
+            pixelFormat = IPF_NV21;
+            break;
+        case 4:
+            pixelFormat = IPF_RGB_565;
+            break;
+        case 5:
+            pixelFormat = IPF_RGB_555;
+            break;
+        case 6:
+            pixelFormat = IPF_RGB_888;
+            break;
+        case 7:
+            pixelFormat = IPF_ARGB_8888;
+            break;
+        case 8:
+            pixelFormat = IPF_RGB_161616;
+            break;
+        case 9:
+            pixelFormat = IPF_ARGB_16161616;
+            break;
+        case 10:
+            pixelFormat = IPF_ABGR_8888;
+            break;
+        case 11:
+            pixelFormat = IPF_ABGR_16161616;
+            break;
+        case 12:
+            pixelFormat = IPF_BGR_888;
+            break;
         }
 
         return pixelFormat;
     }
 
-    static void processBuffer(DocumentManager *self, unsigned char * buffer, int width, int height, int stride, int format)
+    static void processBuffer(DocumentManager *self, unsigned char *buffer, int width, int height, int stride, int format)
     {
         ImageData data;
         data.bytes = buffer;
@@ -230,7 +231,7 @@ public:
     static int SetLicense(const char *license)
     {
         char errorMsgBuffer[512];
-        // Click https://www.dynamsoft.com/customer/license/trialLicense/?product=ddn to get a trial license.
+        // Click https://www.dynamsoft.com/customer/license/trialLicense/?product=dcv&package=cross-platform to get a trial license.
         int ret = DC_InitLicense(license, errorMsgBuffer, 512);
         if (ret != DM_OK)
         {
@@ -239,7 +240,7 @@ public:
         return ret;
     }
 
-    EncodableList WrapResults(DetectedQuadResultArray *pResults) 
+    EncodableList WrapResults(DetectedQuadResultArray *pResults)
     {
         EncodableList out;
         if (normalizer == NULL)
@@ -334,9 +335,9 @@ public:
                     {
                         int index = i * width + j;
 
-                        rgba[index * 4] = data[dataIndex];     // red
+                        rgba[index * 4] = data[dataIndex];         // red
                         rgba[index * 4 + 1] = data[dataIndex + 1]; // green
-                        rgba[index * 4 + 2] = data[dataIndex + 2];     // blue
+                        rgba[index * 4 + 2] = data[dataIndex + 2]; // blue
                         rgba[index * 4 + 3] = 255;                 // alpha
                         dataIndex += 3;
                     }
@@ -410,7 +411,7 @@ public:
         return createNormalizedImage();
     }
 
-    EncodableMap NormalizeBuffer(const unsigned char * buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    EncodableMap NormalizeBuffer(const unsigned char *buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
     {
         FreeImage();
 
@@ -500,10 +501,10 @@ public:
         return ret;
     }
 
-    void DetectBuffer(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>& pendingResult, const unsigned char * buffer, int width, int height, int stride, int format) 
+    void DetectBuffer(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const unsigned char *buffer, int width, int height, int stride, int format)
     {
         pendingResults.push_back(std::move(pendingResult));
-        queueTask((unsigned char*)buffer, width, height, stride, format, stride * height);
+        queueTask((unsigned char *)buffer, width, height, stride, format, stride * height);
     }
 
 private:

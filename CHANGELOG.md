@@ -1,3 +1,6 @@
+## 1.1.2
+- Support AGP 8 for Android.
+
 ## 1.1.1
 - Adjusted the `ThresholdCompensation` value from 9 to 10 in the template file.
 

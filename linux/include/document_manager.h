@@ -60,56 +60,56 @@ public:
     ImagePixelFormat getPixelFormat(int format)
     {
         ImagePixelFormat pixelFormat = IPF_BGR_888;
-        switch(format) {
-            case 0:
-                pixelFormat = IPF_BINARY;
-                break;
-            case 1:
-                pixelFormat = IPF_BINARYINVERTED;
-                break;
-            case 2:
-                pixelFormat = IPF_GRAYSCALED;
-                break;
-            case 3:
-                pixelFormat = IPF_NV21;
-                break;
-            case 4:
-                pixelFormat = IPF_RGB_565;
-                break;
-            case 5:
-                pixelFormat = IPF_RGB_555;
-                break;
-            case 6:
-                pixelFormat = IPF_RGB_888;
-                break;
-            case 7:
-                pixelFormat = IPF_ARGB_8888;
-                break;
-            case 8:
-                pixelFormat = IPF_RGB_161616;
-                break;
-            case 9: 
-                pixelFormat = IPF_ARGB_16161616;
-                break;
-            case 10:
-                pixelFormat = IPF_ABGR_8888;
-                break;
-            case 11:
-                pixelFormat = IPF_ABGR_16161616;
-                break;
-            case 12:
-                pixelFormat = IPF_BGR_888;
-                break;
+        switch (format)
+        {
+        case 0:
+            pixelFormat = IPF_BINARY;
+            break;
+        case 1:
+            pixelFormat = IPF_BINARYINVERTED;
+            break;
+        case 2:
+            pixelFormat = IPF_GRAYSCALED;
+            break;
+        case 3:
+            pixelFormat = IPF_NV21;
+            break;
+        case 4:
+            pixelFormat = IPF_RGB_565;
+            break;
+        case 5:
+            pixelFormat = IPF_RGB_555;
+            break;
+        case 6:
+            pixelFormat = IPF_RGB_888;
+            break;
+        case 7:
+            pixelFormat = IPF_ARGB_8888;
+            break;
+        case 8:
+            pixelFormat = IPF_RGB_161616;
+            break;
+        case 9:
+            pixelFormat = IPF_ARGB_16161616;
+            break;
+        case 10:
+            pixelFormat = IPF_ABGR_8888;
+            break;
+        case 11:
+            pixelFormat = IPF_ABGR_16161616;
+            break;
+        case 12:
+            pixelFormat = IPF_BGR_888;
+            break;
         }
 
         return pixelFormat;
     }
 
-
     static int SetLicense(const char *license)
     {
         char errorMsgBuffer[512];
-        // Click https://www.dynamsoft.com/customer/license/trialLicense/?product=ddn to get a trial license.
+        // Click https://www.dynamsoft.com/customer/license/trialLicense/?product=dcv&package=cross-platform to get a trial license.
         int ret = DC_InitLicense(license, errorMsgBuffer, 512);
         if (ret != DM_OK)
         {
@@ -118,9 +118,9 @@ public:
         return ret;
     }
 
-    FlValue* WrapResults(DetectedQuadResultArray *pResults) 
+    FlValue *WrapResults(DetectedQuadResultArray *pResults)
     {
-        FlValue* out = fl_value_new_list();
+        FlValue *out = fl_value_new_list();
         if (normalizer == NULL)
             return out;
 
@@ -130,7 +130,7 @@ public:
 
             for (int i = 0; i < count; i++)
             {
-                FlValue* result = fl_value_new_map ();
+                FlValue *result = fl_value_new_map();
 
                 DetectedQuadResult *quadResult = pResults->detectedQuadResults[i];
                 int confidence = quadResult->confidenceAsDocumentBoundary;
@@ -144,17 +144,17 @@ public:
                 int x4 = points[3].coordinate[0];
                 int y4 = points[3].coordinate[1];
 
-                fl_value_set_string_take (result, "confidence", fl_value_new_int(confidence));
-                fl_value_set_string_take (result, "x1", fl_value_new_int(x1));
-                fl_value_set_string_take (result, "y1", fl_value_new_int(y1));
-                fl_value_set_string_take (result, "x2", fl_value_new_int(x2));
-                fl_value_set_string_take (result, "y2", fl_value_new_int(y2));
-                fl_value_set_string_take (result, "x3", fl_value_new_int(x3));
-                fl_value_set_string_take (result, "y3", fl_value_new_int(y3));
-                fl_value_set_string_take (result, "x4", fl_value_new_int(x4));
-                fl_value_set_string_take (result, "y4", fl_value_new_int(y4));
+                fl_value_set_string_take(result, "confidence", fl_value_new_int(confidence));
+                fl_value_set_string_take(result, "x1", fl_value_new_int(x1));
+                fl_value_set_string_take(result, "y1", fl_value_new_int(y1));
+                fl_value_set_string_take(result, "x2", fl_value_new_int(x2));
+                fl_value_set_string_take(result, "y2", fl_value_new_int(y2));
+                fl_value_set_string_take(result, "x3", fl_value_new_int(x3));
+                fl_value_set_string_take(result, "y3", fl_value_new_int(y3));
+                fl_value_set_string_take(result, "x4", fl_value_new_int(x4));
+                fl_value_set_string_take(result, "y4", fl_value_new_int(y4));
 
-                fl_value_append_take (out, result);
+                fl_value_append_take(out, result);
             }
         }
 
@@ -164,9 +164,9 @@ public:
         return out;
     }
 
-     FlValue* DetectFile(const char *filename)
+    FlValue *DetectFile(const char *filename)
     {
-        FlValue* out = fl_value_new_list();
+        FlValue *out = fl_value_new_list();
         if (normalizer == NULL)
             return out;
 
@@ -181,9 +181,9 @@ public:
         return WrapResults(pResults);
     }
 
-    FlValue* DetectBuffer(unsigned char * buffer, int width, int height, int stride, int format)
+    FlValue *DetectBuffer(unsigned char *buffer, int width, int height, int stride, int format)
     {
-        FlValue* out = fl_value_new_list();
+        FlValue *out = fl_value_new_list();
         if (normalizer == NULL)
             return out;
 
@@ -207,27 +207,27 @@ public:
         return WrapResults(pResults);
     }
 
-    FlValue* createNormalizedImage()
+    FlValue *createNormalizedImage()
     {
-        FlValue* result = fl_value_new_map ();
+        FlValue *result = fl_value_new_map();
 
         if (imageResult)
         {
             ImageData *imageData = imageResult->image;
             int width = imageData->width;
-			int height = imageData->height;
-			int stride = imageData->stride;
-			int format = (int)imageData->format;
-			unsigned char* data = imageData->bytes;
-			int orientation = imageData->orientation;
-			int length = imageData->bytesLength;
+            int height = imageData->height;
+            int stride = imageData->stride;
+            int format = (int)imageData->format;
+            unsigned char *data = imageData->bytes;
+            int orientation = imageData->orientation;
+            int length = imageData->bytesLength;
 
-            fl_value_set_string_take (result, "width", fl_value_new_int(width));
-            fl_value_set_string_take (result, "height", fl_value_new_int(height));
-            fl_value_set_string_take (result, "stride", fl_value_new_int(stride));
-            fl_value_set_string_take (result, "format", fl_value_new_int(format));
-            fl_value_set_string_take (result, "orientation", fl_value_new_int(orientation));
-            fl_value_set_string_take (result, "length", fl_value_new_int(length));
+            fl_value_set_string_take(result, "width", fl_value_new_int(width));
+            fl_value_set_string_take(result, "height", fl_value_new_int(height));
+            fl_value_set_string_take(result, "stride", fl_value_new_int(stride));
+            fl_value_set_string_take(result, "format", fl_value_new_int(format));
+            fl_value_set_string_take(result, "orientation", fl_value_new_int(orientation));
+            fl_value_set_string_take(result, "length", fl_value_new_int(length));
 
             unsigned char *rgba = new unsigned char[width * height * 4];
             memset(rgba, 0, width * height * 4);
@@ -238,10 +238,10 @@ public:
                 {
                     for (int j = 0; j < width; j++)
                     {
-                        int index = i * width + j;                  
-                        rgba[index * 4] = data[dataIndex];     // red
+                        int index = i * width + j;
+                        rgba[index * 4] = data[dataIndex];         // red
                         rgba[index * 4 + 1] = data[dataIndex + 1]; // green
-                        rgba[index * 4 + 2] = data[dataIndex + 2];     // blue
+                        rgba[index * 4 + 2] = data[dataIndex + 2]; // blue
                         rgba[index * 4 + 3] = 255;                 // alpha
                         dataIndex += 3;
                     }
@@ -263,10 +263,11 @@ public:
                     }
                 }
             }
-            else if (format == IPF_BINARY) {
+            else if (format == IPF_BINARY)
+            {
                 unsigned char *grayscale = new unsigned char[width * height];
                 binary2grayscale(data, grayscale, width, height, stride, length);
-                
+
                 int dataIndex = 0;
                 for (int i = 0; i < height; i++)
                 {
@@ -284,14 +285,14 @@ public:
                 free(grayscale);
             }
 
-            fl_value_set_string_take (result, "data", fl_value_new_uint8_list(rgba, width * height * 4));
+            fl_value_set_string_take(result, "data", fl_value_new_uint8_list(rgba, width * height * 4));
             free(rgba);
         }
 
         return result;
     }
 
-    FlValue* NormalizeFile(const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    FlValue *NormalizeFile(const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
     {
         FreeImage();
 
@@ -312,7 +313,7 @@ public:
         return createNormalizedImage();
     }
 
-    FlValue* NormalizeBuffer(const unsigned char * buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    FlValue *NormalizeBuffer(const unsigned char *buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
     {
         FreeImage();
 
@@ -342,7 +343,7 @@ public:
         return createNormalizedImage();
     }
 
-    void binary2grayscale(unsigned char* data, unsigned char* output, int width, int height, int stride, int length) 
+    void binary2grayscale(unsigned char *data, unsigned char *output, int width, int height, int stride, int length)
     {
         int index = 0;
 
@@ -358,7 +359,8 @@ public:
             {
                 int tmp = (b & (1 << byteCount)) >> byteCount;
 
-                if (shift < stride * 8 * n - skip) {
+                if (shift < stride * 8 * n - skip)
+                {
                     if (tmp == 1)
                         output[index] = 255;
                     else
@@ -370,19 +372,21 @@ public:
                 shift += 1;
             }
 
-            if (shift == stride * 8 * n) {
+            if (shift == stride * 8 * n)
+            {
                 n += 1;
             }
         }
     }
 
-    FlValue* GetParameters()
+    FlValue *GetParameters()
     {
-        if (normalizer == NULL) return fl_value_new_string("");
+        if (normalizer == NULL)
+            return fl_value_new_string("");
 
         char *content = NULL;
         DDN_OutputRuntimeSettingsToString(normalizer, "", &content);
-        FlValue* params = fl_value_new_string((const char*)content);
+        FlValue *params = fl_value_new_string((const char *)content);
         if (content != NULL)
             DDN_FreeString(&content);
         return params;

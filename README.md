@@ -1,5 +1,5 @@
 # flutter_document_scan_sdk
-The Flutter plugin is a wrapper for Dynamsoft's [Document Normalizer SDK](https://www.dynamsoft.com/document-normalizer/docs/introduction/). It enables you to build document rectification applications for **Windows**, **Linux**, **web**, **Android** and **iOS**.
+The Flutter plugin is a wrapper for Dynamsoft's [Document Normalizer SDK v1.x](https://www.dynamsoft.com/document-normalizer/docs/introduction/). It enables you to build document rectification applications for **Windows**, **Linux**, **web**, **Android** and **iOS**.
 
 ## Try Document Rectification Example
 
@@ -43,7 +43,7 @@ flutter run
 ![Flutter document rectification for Android and iOS](https://www.dynamsoft.com/codepool/img/2023/02/flutter-document-rectification-android-ios.jpg)
 
 ## Getting a License Key for Dynamsoft Document Normalizer
-[![](https://img.shields.io/badge/Get-30--day%20FREE%20Trial-blue)](https://www.dynamsoft.com/customer/license/trialLicense/?product=ddn)
+[![](https://img.shields.io/badge/Get-30--day%20FREE%20Trial-blue)](https://www.dynamsoft.com/customer/license/trialLicense/?product=dcv&package=cross-platform)
 
 ## Supported Platforms
 - Web
@@ -85,7 +85,7 @@ Include the JavaScript library of Dynamsoft Document Normalizer in your `index.h
      ```dart
     final _flutterDocumentScanSdkPlugin = FlutterDocumentScanSdk();
     await _flutterDocumentScanSdkPlugin.init(
-        "DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==");
+        "LICENSE-KEY");
 
     await _flutterDocumentScanSdkPlugin.setParameters(Template.grayscale);
     ```
