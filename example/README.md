@@ -2,6 +2,7 @@
 
 A Flutter project that demonstrates how to use [Dynamsoft Document Normalizer](https://www.dynamsoft.com/document-normalizer/docs/core/introduction/?ver=latest&ver=latest) to rectify and enhance document images on Android, iOS, Windows, Linux, and web.
 
+https://github.com/user-attachments/assets/45b47b3a-f5c9-40c8-a943-0f28baf9e508
 
 ## Supported Platforms
 - **Web**
