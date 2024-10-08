@@ -26,6 +26,7 @@ class CameraManager {
   List<DocumentResult>? documentResults;
   bool isDriverLicense = true;
   bool isFinished = false;
+  StreamSubscription<FrameAvailabledEvent>? _frameAvailableStreamSubscription;
   int cameraIndex = 0;
   bool isReadyToGo = false;
   bool _isWebFrameStarted = false;
@@ -86,6 +87,9 @@ class CameraManager {
 
     controller!.dispose();
     controller = null;
+
+    _frameAvailableStreamSubscription?.cancel();
+    _frameAvailableStreamSubscription = null;
   }
 
   Future<void> webCamera() async {
@@ -266,6 +270,31 @@ class CameraManager {
       webCamera();
     } else if (Platform.isAndroid || Platform.isIOS) {
       mobileCamera();
+    } else if (Platform.isWindows) {
+      _frameAvailableStreamSubscription?.cancel();
+      _frameAvailableStreamSubscription =
+          (CameraPlatform.instance as CameraWindows)
+              .onFrameAvailable(controller!.cameraId)
+              .listen(_onFrameAvailable);
+    }
+  }
+
+  void _onFrameAvailable(FrameAvailabledEvent event) {
+    if (cbIsMounted() == false || isFinished) return;
+
+    Map<String, dynamic> map = event.toJson();
+    final Uint8List? data = map['bytes'] as Uint8List?;
+    if (data != null) {
+      if (!_isScanAvailable) {
+        return;
+      }
+
+      _isScanAvailable = false;
+      int width = previewSize!.width.toInt();
+      int height = previewSize!.height.toInt();
+
+      processDocument([data], width, height, [width * 4],
+          ImagePixelFormat.IPF_ARGB_8888.index, []);
     }
   }
 
