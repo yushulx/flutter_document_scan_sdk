@@ -14,7 +14,10 @@ jobs:
       with:
         channel: 'stable'
     - name: Get dependencies
-      run: flutter pub get
+      run: |
+        cd example
+        flutter pub get
     - uses: bluefireteam/flutter-gh-pages@v7
       with:
-          baseHref: /flutter-document-scanner/
+          workingDir: example
+          baseHref: /flutter_document_scan_sdk/
