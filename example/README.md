@@ -4,6 +4,9 @@ A Flutter project that demonstrates how to use [Dynamsoft Document Normalizer](h
 
 https://github.com/user-attachments/assets/45b47b3a-f5c9-40c8-a943-0f28baf9e508
 
+## Online Demo
+[https://yushulx.me/flutter_document_scan_sdk/](https://yushulx.me/flutter_document_scan_sdk/)
+
 ## Supported Platforms
 - **Web**
 - **Android**
