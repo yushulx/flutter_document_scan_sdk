@@ -1,49 +1,21 @@
-# flutter_document_scan_sdk
-The Flutter plugin is a wrapper for Dynamsoft's [Document Normalizer SDK v1.x](https://www.dynamsoft.com/document-normalizer/docs/introduction/). It enables you to build document rectification applications for **Windows**, **Linux**, **web**, **Android** and **iOS**.
+# Flutter Document Detection SDK
+The Flutter plugin is a wrapper for Dynamsoft's [Document Normalizer SDK v1.x](https://www.dynamsoft.com/document-normalizer/docs/introduction/). It enables you to build document detection and rectification applications for **Windows**, **Linux**, **web**, **Android** and **iOS**.
+
+## License Key
+To use the SDK, you need a [license key for Dynamsoft Document Normalizer](https://www.dynamsoft.com/customer/license/trialLicense/?product=dcv&package=cross-platform). Make sure to get your trial or commercial license before using the library.
+
 
 ## Try Document Rectification Example
 
-### Desktop: Windows & Linux
-
-
-**Windows** 
-
 ```bash
 cd example
-flutter run -d windows
+flutter run # for Android
+flutter run -d chrome # for Web
+flutter run -d windows # for Windows
 ```
 
-![Flutter windows document edge detection and normalization](https://www.dynamsoft.com/codepool/img/2022/12/flutter-windows-desktop-document-scanner.png)
+![Flutter web document edge detection and normalization](https://www.dynamsoft.com/codepool/img/2024/10/flutter-document-scanner-detection-rectification.png)
 
-
-**Linux**
-
-```bash
-cd example
-flutter run -d linux
-```
-
-![Flutter Linux document edge detection and normalization](https://www.dynamsoft.com/codepool/img/2022/12/flutter-linux-desktop-document-scanner.png)
-
-### Web
-```bash
-cd example
-flutter run -d chrome
-```
-
-![Flutter web document edge detection and normalization](https://www.dynamsoft.com/codepool/img/2023/05/document-edge-edit.png)
-
-### Mobile: Android & iOS
-
-```bash
-cd example
-flutter run 
-```
-
-![Flutter document rectification for Android and iOS](https://www.dynamsoft.com/codepool/img/2023/02/flutter-document-rectification-android-ios.jpg)
-
-## Getting a License Key for Dynamsoft Document Normalizer
-[![](https://img.shields.io/badge/Get-30--day%20FREE%20Trial-blue)](https://www.dynamsoft.com/customer/license/trialLicense/?product=dcv&package=cross-platform)
 
 ## Supported Platforms
 - Web
