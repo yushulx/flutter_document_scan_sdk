@@ -20,7 +20,7 @@ import '../utils.dart';
 class CameraManager {
   BuildContext context;
   CameraController? controller;
-  late List<CameraDescription> _cameras;
+  List<CameraDescription> _cameras = [];
   Size? previewSize;
   bool _isScanAvailable = true;
   List<DocumentResult>? documentResults;
@@ -30,6 +30,8 @@ class CameraManager {
   int cameraIndex = 0;
   bool isReadyToGo = false;
   bool _isWebFrameStarted = false;
+  bool isFrontFound = false;
+  bool isBackFound = false;
 
   CameraManager(
       {required this.context,
@@ -51,6 +53,8 @@ class CameraManager {
 
     if (kIsWeb) {
       await waitForStop();
+      controller?.dispose();
+      controller = null;
     }
 
     cameraIndex = cameraIndex == 0 ? 1 : 0;
@@ -95,18 +99,20 @@ class CameraManager {
   Future<void> webCamera() async {
     _isWebFrameStarted = true;
     while (!(controller == null || isFinished || cbIsMounted() == false)) {
-      XFile file = await controller!.takePicture();
-      var results = await docScanner.detectFile(file.path);
-      if (!cbIsMounted()) break;
+      XFile? file = await controller?.takePicture();
+      if (file != null) {
+        var results = await docScanner.detectFile(file.path);
+        if (!cbIsMounted()) break;
 
-      documentResults = results;
+        documentResults = results;
+      }
       cbRefreshUi();
 
-      if (isReadyToGo && results != null && results.isNotEmpty) {
+      if (isReadyToGo && documentResults != null) {
         if (!isFinished) {
           isFinished = true;
 
-          final data = await file.readAsBytes();
+          final data = await file!.readAsBytes();
           ui.Image sourceImage = await decodeImageFromList(data);
           cbNavigation(DocumentData(
             image: sourceImage,
@@ -301,7 +307,28 @@ class CameraManager {
   Future<void> initCamera() async {
     try {
       WidgetsFlutterBinding.ensureInitialized();
-      _cameras = await availableCameras();
+
+      List<CameraDescription> allCameras = await availableCameras();
+
+      if (kIsWeb) {
+        for (final CameraDescription cameraDescription in allCameras) {
+          print(cameraDescription.name);
+          if (cameraDescription.name.toLowerCase().contains('front')) {
+            if (isFrontFound) continue;
+            isFrontFound = true;
+            _cameras.add(cameraDescription);
+          } else if (cameraDescription.name.toLowerCase().contains('back')) {
+            if (isBackFound) continue;
+            isBackFound = true;
+            _cameras.add(cameraDescription);
+          } else {
+            _cameras.add(cameraDescription);
+          }
+        }
+      } else {
+        _cameras = allCameras;
+      }
+
       if (_cameras.isEmpty) return;
 
       if (!kIsWeb) {
@@ -321,34 +348,70 @@ class CameraManager {
 
   Widget getPreview() {
     if (controller == null || !controller!.value.isInitialized || isFinished) {
-      return Container(
-        child: const Text('No camera available!'),
-      );
+      return Text('No camera available!');
     }
+
+    // if (kIsWeb) {
+    //   return Transform(
+    //     alignment: Alignment.center,
+    //     transform: Matrix4.identity()..scale(-1.0, 1.0), // Flip horizontally
+    //     child: CameraPreview(controller!),
+    //   );
+    // }
 
     return CameraPreview(controller!);
   }
 
+  void showInSnackBar(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _logError(String code, String? message) {
+    // ignore: avoid_print
+    print('Error: $code${message == null ? '' : '\nError Message: $message'}');
+  }
+
+  void _showCameraException(CameraException e) {
+    _logError(e.code, e.description);
+    showInSnackBar('Error: ${e.code}\n${e.description}');
+  }
+
   Future<void> toggleCamera(int index) async {
     ResolutionPreset preset = ResolutionPreset.high;
-    controller = CameraController(_cameras[index], preset);
-    controller!.initialize().then((_) {
-      if (!cbIsMounted()) {
-        return;
-      }
+    controller = CameraController(
+        _cameras[index], kIsWeb ? ResolutionPreset.max : preset,
+        enableAudio: false);
 
-      previewSize = controller!.value.previewSize;
+    try {
+      await controller!.initialize();
+      if (cbIsMounted()) {
+        previewSize = controller!.value.previewSize;
 
-      startVideo();
-    }).catchError((Object e) {
-      if (e is CameraException) {
-        switch (e.code) {
-          case 'CameraAccessDenied':
-            break;
-          default:
-            break;
-        }
+        startVideo();
       }
-    });
+    } on CameraException catch (e) {
+      switch (e.code) {
+        case 'CameraAccessDenied':
+          showInSnackBar('You have denied camera access.');
+        case 'CameraAccessDeniedWithoutPrompt':
+          // iOS only
+          showInSnackBar('Please go to Settings app to enable camera access.');
+        case 'CameraAccessRestricted':
+          // iOS only
+          showInSnackBar('Camera access is restricted.');
+        case 'AudioAccessDenied':
+          showInSnackBar('You have denied audio access.');
+        case 'AudioAccessDeniedWithoutPrompt':
+          // iOS only
+          showInSnackBar('Please go to Settings app to enable audio access.');
+        case 'AudioAccessRestricted':
+          // iOS only
+          showInSnackBar('Audio access is restricted.');
+        default:
+          _showCameraException(e);
+          break;
+      }
+    }
   }
 }
