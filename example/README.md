@@ -40,3 +40,5 @@ The rectified images are converted to base64 strings and saved with [shared_pref
 
 ![web local storage size limitation](https://www.dynamsoft.com/codepool/img/2023/07/flutter-web-local-storage-limitation.png)
 
+## Blog
+[How to Build a Cross-platform Document Scanner App with Flutter](https://www.dynamsoft.com/codepool/flutter-document-scanner-app-guide.html)
