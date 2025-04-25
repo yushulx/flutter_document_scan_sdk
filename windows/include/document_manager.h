@@ -359,6 +359,7 @@ public:
 
             unsigned char *rgba = new unsigned char[width * height * 4];
             memset(rgba, 0, width * height * 4);
+
             if (format == IPF_RGB_888)
             {
                 int dataIndex = 0;
@@ -376,7 +377,7 @@ public:
                     }
                 }
             }
-            else if (format == IPF_GRAYSCALED || format == IPF_BINARY_8_INVERTED)
+            else if (format == IPF_GRAYSCALED || format == IPF_BINARY_8_INVERTED || format == IPF_BINARY_8)
             {
                 int dataIndex = 0;
                 for (int i = 0; i < height; i++)
