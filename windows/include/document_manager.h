@@ -186,7 +186,7 @@ public:
         int ret = cvr->InitSettings(params, errorMsgBuffer, 512);
         if (ret != 0)
         {
-            cout << errorMsgBuffer << endl;
+            printf("SetParameters: %s\n", errorMsgBuffer);
         }
 
         return ret;
@@ -334,11 +334,11 @@ public:
 
         CProcessedDocumentResult *pResults = capturedResult->GetProcessedDocumentResult();
 
-        int count = pResults->GetDeskewedImageResultItemsCount();
+        int count = pResults->GetEnhancedImageResultItemsCount();
 
         if (count > 0)
         {
-            const CDeskewedImageResultItem *imageResult = pResults->GetDeskewedImageResultItem(0);
+            const CEnhancedImageResultItem *imageResult = pResults->GetEnhancedImageResultItem(0);
             const CImageData *imageData = imageResult->GetImageData();
             // CImageData *gray = processor->ConvertToGray(normalizedImage);
             // CImageData *imageData = processor->ConvertToBinaryGlobal(gray, -1, true);
