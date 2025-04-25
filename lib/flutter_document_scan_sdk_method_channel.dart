@@ -52,15 +52,16 @@ class MethodChannelFlutterDocumentScanSdk
   }
 
   /// Document edge detection.
-  /// [bytes] - bytes of the image.
-  /// [width] - width of the image.
-  /// [height] - height of the image.
-  /// [stride] - stride of the image.
-  /// [format] - format of the image.
+  /// - [bytes]: bytes of the image.
+  /// - [width]: width of the image.
+  /// - [height]: height of the image.
+  /// - [stride]: stride of the image.
+  /// - [format]: format of the image.
+  /// - [rotation]: Rotation angle in degrees (0, 90, 180, 270).
   /// Returns a [List] of [DocumentResult].
   @override
-  Future<List<DocumentResult>> detectBuffer(
-      Uint8List bytes, int width, int height, int stride, int format) async {
+  Future<List<DocumentResult>> detectBuffer(Uint8List bytes, int width,
+      int height, int stride, int format, int rotation) async {
     List? results = await methodChannel.invokeListMethod<dynamic>(
       'detectBuffer',
       {
@@ -68,7 +69,8 @@ class MethodChannelFlutterDocumentScanSdk
         'width': width,
         'height': height,
         'stride': stride,
-        'format': format
+        'format': format,
+        'rotation': rotation
       },
     );
 
@@ -106,6 +108,8 @@ class MethodChannelFlutterDocumentScanSdk
   /// Normalize documents.
   /// [file] - path to the file.
   /// [points] - points of the document.
+  ///
+  /// Returns a NormalizedImage object.
   @override
   Future<NormalizedImage?> normalizeFile(String file, dynamic points) async {
     Offset offset = points[0];
@@ -160,15 +164,18 @@ class MethodChannelFlutterDocumentScanSdk
   }
 
   /// Normalize documents.
-  /// [bytes] - bytes of the image.
-  /// [width] - width of the image.
-  /// [height] - height of the image.
-  /// [stride] - stride of the image.
-  /// [format] - format of the image.
-  /// [points] - points of the document.
+  /// - [bytes]: bytes of the image.
+  /// - [width]: width of the image.
+  /// - [height]: height of the image.
+  /// - [stride]: stride of the image.
+  /// - [format]: format of the image.
+  /// - [points]: points of the document.
+  /// - [rotation]: Rotation angle in degrees (0, 90, 180, 270).
+  ///
+  /// Returns a NormalizedImage object.
   @override
   Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width,
-      int height, int stride, int format, dynamic points) async {
+      int height, int stride, int format, dynamic points, int rotation) async {
     Offset offset = points[0];
     int x1 = offset.dx.toInt();
     int y1 = offset.dy.toInt();
@@ -199,7 +206,8 @@ class MethodChannelFlutterDocumentScanSdk
         'x3': x3,
         'y3': y3,
         'x4': x4,
-        'y4': y4
+        'y4': y4,
+        'rotation': rotation
       },
     );
 
@@ -222,12 +230,5 @@ class MethodChannelFlutterDocumentScanSdk
     }
 
     return null;
-  }
-
-  /// Save a document.
-  @override
-  Future<int?> save(String filename) async {
-    return await methodChannel
-        .invokeMethod<int>('save', {'filename': filename});
   }
 }

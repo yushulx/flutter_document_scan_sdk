@@ -39,7 +39,6 @@ namespace flutter_document_scan_sdk
   FlutterDocumentScanSdkPlugin::FlutterDocumentScanSdkPlugin()
   {
     manager = new DocumentManager();
-    manager->Init();
   }
 
   FlutterDocumentScanSdkPlugin::~FlutterDocumentScanSdkPlugin()
@@ -53,28 +52,7 @@ namespace flutter_document_scan_sdk
   {
     const auto *arguments = std::get_if<EncodableMap>(method_call.arguments());
 
-    if (method_call.method_name().compare("getPlatformVersion") == 0)
-    {
-      std::ostringstream version_stream;
-      version_stream << "Windows ";
-      if (IsWindows10OrGreater())
-      {
-        version_stream << "10+";
-      }
-      else if (IsWindows8OrGreater())
-      {
-        version_stream << "8";
-      }
-      else if (IsWindows7OrGreater())
-      {
-        version_stream << "7";
-      }
-
-      version_stream << ". Dynamsoft Document Normalizer version: ";
-      version_stream << manager->GetVersion();
-      result->Success(flutter::EncodableValue(version_stream.str()));
-    }
-    else if (method_call.method_name().compare("init") == 0)
+    if (method_call.method_name().compare("init") == 0)
     {
       std::string license;
       int ret = 0;
@@ -86,7 +64,7 @@ namespace flutter_document_scan_sdk
         {
           license = std::get<std::string>(license_it->second);
         }
-        ret = DocumentManager::SetLicense(license.c_str());
+        ret = manager->SetLicense(license.c_str());
       }
 
       result->Success(EncodableValue(ret));
@@ -113,24 +91,6 @@ namespace flutter_document_scan_sdk
     {
       result->Success(manager->GetParameters());
     }
-    else if (method_call.method_name().compare("save") == 0)
-    {
-      std::string filename;
-      EncodableList results;
-      int ret = 0;
-
-      if (arguments)
-      {
-        auto filename_it = arguments->find(EncodableValue("filename"));
-        if (filename_it != arguments->end())
-        {
-          filename = std::get<std::string>(filename_it->second);
-        }
-        ret = manager->Save(filename.c_str());
-      }
-
-      result->Success(EncodableValue(ret));
-    }
     else if (method_call.method_name().compare("detectFile") == 0)
     {
       std::string filename;
@@ -143,17 +103,15 @@ namespace flutter_document_scan_sdk
         {
           filename = std::get<std::string>(filename_it->second);
         }
-
-        results = manager->DetectFile(filename.c_str());
       }
 
-      result->Success(results);
+      manager->DetectFile(result, filename.c_str());
     }
     else if (method_call.method_name().compare("detectBuffer") == 0)
     {
       std::vector<unsigned char> bytes;
       EncodableList results;
-      int width = 0, height = 0, stride = 0, format = 0;
+      int width = 0, height = 0, stride = 0, format = 0, rotation = 0;
 
       if (arguments)
       {
@@ -186,15 +144,22 @@ namespace flutter_document_scan_sdk
         {
           format = std::get<int>(format_it->second);
         }
-        manager->DetectBuffer(result, reinterpret_cast<unsigned char*>(bytes.data()), width, height, stride, format);
+
+        auto rotation_it = arguments->find(EncodableValue("rotation"));
+        if (rotation_it != arguments->end())
+        {
+          rotation = std::get<int>(rotation_it->second);
+        }
       }
+
+      manager->DetectBuffer(result, reinterpret_cast<unsigned char *>(bytes.data()), width, height, stride, format, rotation);
     }
     else if (method_call.method_name().compare("normalizeBuffer") == 0)
     {
       std::vector<unsigned char> bytes;
       EncodableMap results;
       int width = 0, height = 0, stride = 0, format = 0;
-      int x1 = 0, y1 = 0, x2 = 0, y2 = 0, x3 = 0, y3 = 0, x4 = 0, y4 = 0;
+      int x1 = 0, y1 = 0, x2 = 0, y2 = 0, x3 = 0, y3 = 0, x4 = 0, y4 = 0, rotation;
 
       if (arguments)
       {
@@ -276,9 +241,13 @@ namespace flutter_document_scan_sdk
           y4 = std::get<int>(y4_it->second);
         }
 
-        results = manager->NormalizeBuffer(reinterpret_cast<unsigned char*>(bytes.data()), width, height, stride, format, x1, y1, x2, y2, x3, y3, x4, y4);
+        auto rotation_it = arguments->find(EncodableValue("rotation"));
+        if (rotation_it != arguments->end())
+        {
+          rotation = std::get<int>(rotation_it->second);
+        }
       }
-      result->Success(results);
+      manager->NormalizeBuffer(result, reinterpret_cast<unsigned char *>(bytes.data()), width, height, stride, format, x1, y1, x2, y2, x3, y3, x4, y4, rotation);
     }
     else if (method_call.method_name().compare("normalizeFile") == 0)
     {
@@ -341,11 +310,9 @@ namespace flutter_document_scan_sdk
         {
           y4 = std::get<int>(y4_it->second);
         }
-
-        results = manager->NormalizeFile(filename.c_str(), x1, y1, x2, y2, x3, y3, x4, y4);
       }
 
-      result->Success(results);
+      manager->NormalizeFile(result, filename.c_str(), x1, y1, x2, y2, x3, y3, x4, y4);
     }
     else
     {

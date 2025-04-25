@@ -65,7 +65,8 @@ class _HomePageState extends State<HomePage> {
           image.width,
           image.height,
           byteData.lengthInBytes ~/ image.height,
-          ImagePixelFormat.IPF_ARGB_8888.index);
+          ImagePixelFormat.IPF_ARGB_8888.index,
+          ImageRotation.rotation0.value);
 
       if (results != null && results.isNotEmpty) {
         openResultPage(

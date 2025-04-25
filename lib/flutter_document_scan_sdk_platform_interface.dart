@@ -47,6 +47,18 @@ enum ImagePixelFormat {
   IPF_BGR_888
 }
 
+enum ImageRotation {
+  rotation0(0),
+  rotation90(90),
+  rotation180(180),
+  rotation270(270);
+
+  final int value;
+  const ImageRotation(this.value);
+}
+
+enum ImageFilterType { binary, grayscale, color }
+
 abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
   /// Constructs a FlutterDocumentScanSdkPlatform.
   FlutterDocumentScanSdkPlatform() : super(token: _token);
@@ -82,7 +94,7 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
   }
 
   Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width,
-      int height, int stride, int format, dynamic points) {
+      int height, int stride, int format, dynamic points, int rotation) {
     throw UnimplementedError('normalizeBuffer() has not been implemented.');
   }
 
@@ -102,8 +114,8 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
     throw UnimplementedError('getParameters() has not been implemented.');
   }
 
-  Future<List<DocumentResult>> detectBuffer(
-      Uint8List bytes, int width, int height, int stride, int format) {
+  Future<List<DocumentResult>> detectBuffer(Uint8List bytes, int width,
+      int height, int stride, int format, int rotation) {
     throw UnimplementedError('detectBuffer() has not been implemented.');
   }
 }

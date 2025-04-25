@@ -127,7 +127,8 @@ class CameraManager {
   void handleDocument(Uint8List bytes, int width, int height, int stride,
       int format, dynamic points) {
     docScanner
-        .normalizeBuffer(bytes, width, height, stride, format, points)
+        .normalizeBuffer(bytes, width, height, stride, format, points,
+            ImageRotation.rotation90.value)
         .then((normalizedImage) {
       if (normalizedImage != null) {
         PixelFormat pixelFormat = PixelFormat.rgba8888;
@@ -147,8 +148,15 @@ class CameraManager {
 
   void processDocument(List<Uint8List> bytes, int width, int height,
       List<int> strides, int format, List<int> pixelStrides) {
+    int rotation = 0;
+    if (MediaQuery.of(context).size.width <
+        MediaQuery.of(context).size.height) {
+      if (Platform.isAndroid) {
+        rotation = ImageRotation.rotation90.value;
+      }
+    }
     docScanner
-        .detectBuffer(bytes[0], width, height, strides[0], format)
+        .detectBuffer(bytes[0], width, height, strides[0], format, rotation)
         .then((results) {
       if (!cbIsMounted()) return;
 

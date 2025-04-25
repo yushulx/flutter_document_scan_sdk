@@ -219,8 +219,8 @@ class _SavingPageState extends State<SavingPage> {
     int stride = byteData.lengthInBytes ~/ sourceImage.height;
     int format = ImagePixelFormat.IPF_ARGB_8888.index;
 
-    normalizedImage = await docScanner.normalizeBuffer(
-        bytes, width, height, stride, format, points);
+    normalizedImage = await docScanner.normalizeBuffer(bytes, width, height,
+        stride, format, points, ImageRotation.rotation0.value);
     if (normalizedImage != null) {
       decodeImageFromPixels(normalizedImage!.data, normalizedImage!.width,
           normalizedImage!.height, PixelFormat.rgba8888, (ui.Image img) {

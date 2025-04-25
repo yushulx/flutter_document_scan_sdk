@@ -37,7 +37,7 @@ dependencies:
 Include the JavaScript library of Dynamsoft Document Normalizer in your `index.html` file:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/dynamsoft-document-normalizer@1.0.12/dist/ddn.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dynamsoft-capture-vision-bundle@2.6.1000/dist/dcv.bundle.min.js"></script>
 ```
 
 ## API Compatibility

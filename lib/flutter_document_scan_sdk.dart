@@ -21,9 +21,9 @@ class FlutterDocumentScanSdk {
 
   /// Normalize the image
   Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width,
-      int height, int stride, int format, dynamic points) async {
-    return FlutterDocumentScanSdkPlatform.instance
-        .normalizeBuffer(bytes, width, height, stride, format, points);
+      int height, int stride, int format, dynamic points, int rotation) async {
+    return FlutterDocumentScanSdkPlatform.instance.normalizeBuffer(
+        bytes, width, height, stride, format, points, rotation);
   }
 
   /// Detects documents in the given image file.
@@ -32,15 +32,10 @@ class FlutterDocumentScanSdk {
   }
 
   /// Detects documents from the given image bytes.
-  Future<List<DocumentResult>?> detectBuffer(
-      Uint8List bytes, int width, int height, int stride, int format) {
+  Future<List<DocumentResult>?> detectBuffer(Uint8List bytes, int width,
+      int height, int stride, int format, int rotation) {
     return FlutterDocumentScanSdkPlatform.instance
-        .detectBuffer(bytes, width, height, stride, format);
-  }
-
-  /// Save the current image to the given filename.
-  Future<int?> save(String filename) {
-    return FlutterDocumentScanSdkPlatform.instance.save(filename);
+        .detectBuffer(bytes, width, height, stride, format, rotation);
   }
 
   /// Set parameters for the document scanner
