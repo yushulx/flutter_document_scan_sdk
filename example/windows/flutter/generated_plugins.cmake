@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   camera_windows
   file_selector_windows
   flutter_document_scan_sdk
+  flutter_lite_camera
   share_plus
   url_launcher_windows
 )

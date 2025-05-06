@@ -124,12 +124,6 @@ class _HomePageState extends State<HomePage> {
           children: [
             GestureDetector(
                 onTap: () {
-                  if (!kIsWeb && Platform.isLinux) {
-                    showAlert(context, "Warning",
-                        "${Platform.operatingSystem} is not supported");
-                    return;
-                  }
-
                   Navigator.push(context, MaterialPageRoute(builder: (context) {
                     return const CameraPage();
                   }));
@@ -224,7 +218,7 @@ class _HomePageState extends State<HomePage> {
                               Icon(Icons.warning_amber_rounded,
                                   color: Colors.white, size: 20),
                               Text(
-                                "  License expired! Renew your license ->",
+                                "  License expired! Renew your license",
                                 style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.white,

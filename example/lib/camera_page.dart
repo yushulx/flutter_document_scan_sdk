@@ -69,21 +69,10 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   }
 
   List<Widget> createCameraPreview() {
-    if (_cameraManager.controller != null &&
-        _cameraManager.previewSize != null) {
-      double width = _cameraManager.previewSize!.width;
-      double height = _cameraManager.previewSize!.height;
-      if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-        if (MediaQuery.of(context).size.width <
-            MediaQuery.of(context).size.height) {
-          width = _cameraManager.previewSize!.height;
-          height = _cameraManager.previewSize!.width;
-        }
-      }
-
+    if (!kIsWeb &&
+        (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
       return [
-        SizedBox(
-            width: width, height: height, child: _cameraManager.getPreview()),
+        SizedBox(width: 640, height: 480, child: _cameraManager.getPreview()),
         Positioned(
           top: 0.0,
           right: 0.0,
@@ -95,7 +84,34 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
         ),
       ];
     } else {
-      return [const CircularProgressIndicator()];
+      if (_cameraManager.controller != null &&
+          _cameraManager.previewSize != null) {
+        double width = _cameraManager.previewSize!.width;
+        double height = _cameraManager.previewSize!.height;
+        if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+          if (MediaQuery.of(context).size.width <
+              MediaQuery.of(context).size.height) {
+            width = _cameraManager.previewSize!.height;
+            height = _cameraManager.previewSize!.width;
+          }
+        }
+
+        return [
+          SizedBox(
+              width: width, height: height, child: _cameraManager.getPreview()),
+          Positioned(
+            top: 0.0,
+            right: 0.0,
+            bottom: 0,
+            left: 0.0,
+            child: createOverlay(
+              _cameraManager.documentResults,
+            ),
+          ),
+        ];
+      } else {
+        return [const CircularProgressIndicator()];
+      }
     }
   }
 
@@ -126,30 +142,17 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
           ),
           body: Stack(
             children: <Widget>[
-              if (_cameraManager.controller != null &&
-                  _cameraManager.previewSize != null)
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  left: 0,
-                  bottom: 0,
-                  child: FittedBox(
-                    fit: BoxFit.cover,
-                    child: Stack(
-                      children: createCameraPreview(),
-                    ),
+              Positioned(
+                top: 0,
+                right: 0,
+                left: 0,
+                bottom: 0,
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  child: Stack(
+                    children: createCameraPreview(),
                   ),
                 ),
-              const Positioned(
-                left: 122,
-                right: 122,
-                bottom: 28,
-                child: Text('Powered by Dynamsoft',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white,
-                    )),
               ),
               Positioned(
                 bottom: 80,

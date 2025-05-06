@@ -23,6 +23,7 @@ dependencies:
   share_plus: ^10.0.2
   url_launcher: ^6.1.11
   flutter_exif_rotation: ^0.5.1
+  flutter_lite_camera: ^0.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -48,4 +49,5 @@ flutter:
     - images/icon-capture.png
     - images/image-document.png
     - images/logo-ddn.png
+    - images/default.png
     
