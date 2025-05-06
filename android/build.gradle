@@ -42,5 +42,5 @@ android {
 }
 
 dependencies { 
-    implementation 'com.dynamsoft:dynamsoftdocumentnormalizer:1.0.30' 
+    implementation "com.dynamsoft:dynamsoftcapturevisionbundle:2.6.1003"
 }

@@ -7,14 +7,9 @@
 #include <vector>
 #include <iostream>
 #include <map>
+#include <mutex>
 
 #include <flutter/standard_method_codec.h>
-
-#include <thread>
-#include <condition_variable>
-#include <mutex>
-#include <queue>
-#include <functional>
 
 using namespace std;
 using namespace dynamsoft::ddn;
@@ -112,7 +107,7 @@ public:
 
         for (int i = 0; i < count; i++)
         {
-            EncodableMap map;
+            EncodableMap out;
 
             const CDetectedQuadResultItem *quadResult = pResults->GetDetectedQuadResultItem(i);
             int confidence = quadResult->GetConfidenceAsDocumentBoundary();
@@ -126,16 +121,16 @@ public:
             int x4 = points[3][0];
             int y4 = points[3][1];
 
-            map[EncodableValue("confidence")] = EncodableValue(confidence);
-            map[EncodableValue("x1")] = EncodableValue(x1);
-            map[EncodableValue("y1")] = EncodableValue(y1);
-            map[EncodableValue("x2")] = EncodableValue(x2);
-            map[EncodableValue("y2")] = EncodableValue(y2);
-            map[EncodableValue("x3")] = EncodableValue(x3);
-            map[EncodableValue("y3")] = EncodableValue(y3);
-            map[EncodableValue("x4")] = EncodableValue(x4);
-            map[EncodableValue("y4")] = EncodableValue(y4);
-            contours.push_back(map);
+            out[EncodableValue("confidence")] = EncodableValue(confidence);
+            out[EncodableValue("x1")] = EncodableValue(x1);
+            out[EncodableValue("y1")] = EncodableValue(y1);
+            out[EncodableValue("x2")] = EncodableValue(x2);
+            out[EncodableValue("y2")] = EncodableValue(y2);
+            out[EncodableValue("x3")] = EncodableValue(x3);
+            out[EncodableValue("y3")] = EncodableValue(y3);
+            out[EncodableValue("x4")] = EncodableValue(x4);
+            out[EncodableValue("y4")] = EncodableValue(y4);
+            contours.push_back(out);
         }
         return contours;
     }
@@ -424,13 +419,44 @@ public:
         return map;
     }
 
+    void DetectFile(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const char *filename)
+    {
+        if (!cvr)
+        {
+            EncodableList out;
+            pendingResult->Success(out);
+            return;
+        }
+
+        listener->pendingResults.push_back(std::move(pendingResult));
+        fileFetcher->SetFile(filename);
+        start(CPresetTemplate::PT_DETECT_DOCUMENT_BOUNDARIES);
+    }
+
+    void DetectBuffer(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const unsigned char *buffer, int width, int height, int stride, int format, int rotation)
+    {
+        if (!cvr)
+        {
+            EncodableList out;
+            pendingResult->Success(out);
+            return;
+        }
+
+        listener->pendingResults.push_back(std::move(pendingResult));
+        CImageData *imageData = new CImageData(stride * height, buffer, width, height, stride, getPixelFormat(format), rotation);
+        fileFetcher->SetFile(imageData);
+        delete imageData;
+
+        start(CPresetTemplate::PT_DETECT_DOCUMENT_BOUNDARIES);
+    }
+
     void NormalizeFile(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
     {
-        EncodableMap map;
+        EncodableMap out;
 
         if (!cvr)
         {
-            pendingResult->Success(map);
+            pendingResult->Success(out);
             return;
         }
 
@@ -456,16 +482,16 @@ public:
         }
 
         CCapturedResult *capturedResult = cvr->Capture(filename, CPresetTemplate::PT_NORMALIZE_DOCUMENT);
-        map = createNormalizedImage(capturedResult);
-        pendingResult->Success(map);
+        out = createNormalizedImage(capturedResult);
+        pendingResult->Success(out);
     }
 
     void NormalizeBuffer(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const unsigned char *buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int rotation)
     {
-        EncodableMap map;
+        EncodableMap out;
         if (!cvr)
         {
-            pendingResult->Success(map);
+            pendingResult->Success(out);
             return;
         }
 
@@ -494,8 +520,8 @@ public:
         CCapturedResult *capturedResult = cvr->Capture(imageData, CPresetTemplate::PT_NORMALIZE_DOCUMENT);
         delete imageData;
 
-        map = createNormalizedImage(capturedResult);
-        pendingResult->Success(map);
+        out = createNormalizedImage(capturedResult);
+        pendingResult->Success(out);
     }
 
     EncodableValue GetParameters()
@@ -506,37 +532,6 @@ public:
         char *content = cvr->OutputSettings("*");
         EncodableValue params = EncodableValue((const char *)content);
         return params;
-    }
-
-    void DetectBuffer(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const unsigned char *buffer, int width, int height, int stride, int format, int rotation)
-    {
-        if (!cvr)
-        {
-            EncodableList out;
-            pendingResult->Success(out);
-            return;
-        }
-
-        listener->pendingResults.push_back(std::move(pendingResult));
-        CImageData *imageData = new CImageData(stride * height, buffer, width, height, stride, getPixelFormat(format), rotation);
-        fileFetcher->SetFile(imageData);
-        delete imageData;
-
-        start(CPresetTemplate::PT_DETECT_DOCUMENT_BOUNDARIES);
-    }
-
-    void DetectFile(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const char *filename)
-    {
-        if (!cvr)
-        {
-            EncodableList out;
-            pendingResult->Success(out);
-            return;
-        }
-
-        listener->pendingResults.push_back(std::move(pendingResult));
-        fileFetcher->SetFile(filename);
-        start(CPresetTemplate::PT_DETECT_DOCUMENT_BOUNDARIES);
     }
 
 private:

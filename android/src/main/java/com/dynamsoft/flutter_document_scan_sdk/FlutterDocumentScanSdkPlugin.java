@@ -23,17 +23,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.dynamsoft.core.ImageData;
-import com.dynamsoft.core.CoreException;
-import com.dynamsoft.core.LicenseManager;
-import com.dynamsoft.core.LicenseVerificationListener;
-import com.dynamsoft.core.EnumImagePixelFormat;
-import com.dynamsoft.core.Quadrilateral;
-
-import com.dynamsoft.ddn.DocumentNormalizer;
-import com.dynamsoft.ddn.DetectedQuadResult;
-import com.dynamsoft.ddn.DocumentNormalizerException;
-import com.dynamsoft.ddn.NormalizedImageResult;
+import com.dynamsoft.cvr.CapturedResult;
+import com.dynamsoft.cvr.CaptureVisionRouter;
+import com.dynamsoft.cvr.SimplifiedCaptureVisionSettings;
+import com.dynamsoft.license.LicenseManager;
+import com.dynamsoft.core.basic_structures.CapturedResultItem;
+import com.dynamsoft.core.basic_structures.ImageData;
+import com.dynamsoft.core.basic_structures.Quadrilateral;
+import com.dynamsoft.ddn.NormalizedImageResultItem;
 
 import android.graphics.Point;
 
