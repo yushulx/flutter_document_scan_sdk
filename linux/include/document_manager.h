@@ -129,7 +129,8 @@ public:
 
             const CDetectedQuadResultItem *quadResult = pResults->GetDetectedQuadResultItem(i);
             int confidence = quadResult->GetConfidenceAsDocumentBoundary();
-            CPoint *points = quadResult->GetLocation().points;
+            CQuadrilateral location = quadResult->GetLocation();
+            CPoint *points = location.points;
             int x1 = points[0][0];
             int y1 = points[0][1];
             int x2 = points[1][0];
@@ -423,11 +424,11 @@ public:
             fl_value_set_string_take(result, "data", fl_value_new_uint8_list(rgba, width * height * 4));
             free(rgba);
         }
-		
+
         return result;
     }
 
-    void *DetectFile(FlMethodCall *method_call, const char *filename)
+    void DetectFile(FlMethodCall *method_call, const char *filename)
     {
         if (!cvr)
         {
@@ -460,7 +461,7 @@ public:
         start(CPresetTemplate::PT_DETECT_DOCUMENT_BOUNDARIES);
     }
 
-    void NormalizeFile(FlMethodCall *method_call, const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    FlValue *NormalizeFile(FlMethodCall *method_call, const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
     {
         FlValue *out = NULL;
         if (!cvr)
@@ -468,7 +469,7 @@ public:
             out = fl_value_new_map();
             g_autoptr(FlMethodResponse) response = FL_METHOD_RESPONSE(fl_method_success_response_new(out));
             fl_method_call_respond(method_call, response, nullptr);
-            return;
+            return out;
         }
 
         SimplifiedCaptureVisionSettings settings = {};
@@ -494,11 +495,10 @@ public:
 
         CCapturedResult *capturedResult = cvr->Capture(filename, CPresetTemplate::PT_NORMALIZE_DOCUMENT);
         out = createNormalizedImage(capturedResult);
-        g_autoptr(FlMethodResponse) response = FL_METHOD_RESPONSE(fl_method_success_response_new(out));
-        fl_method_call_respond(method_call, response, nullptr);
+        return out;
     }
 
-    void NormalizeBuffer(FlMethodCall *method_call, const unsigned char *buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int rotation)
+    FlValue *NormalizeBuffer(FlMethodCall *method_call, const unsigned char *buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int rotation)
     {
         FlValue *out = NULL;
         if (!cvr)
@@ -506,7 +506,7 @@ public:
             out = fl_value_new_map();
             g_autoptr(FlMethodResponse) response = FL_METHOD_RESPONSE(fl_method_success_response_new(out));
             fl_method_call_respond(method_call, response, nullptr);
-            return;
+            return out;
         }
 
         SimplifiedCaptureVisionSettings settings = {};
@@ -535,8 +535,7 @@ public:
         delete imageData;
 
         out = createNormalizedImage(capturedResult);
-        g_autoptr(FlMethodResponse) response = FL_METHOD_RESPONSE(fl_method_success_response_new(out));
-        fl_method_call_respond(method_call, response, nullptr);
+        return out;
     }
 
     FlValue *GetParameters()

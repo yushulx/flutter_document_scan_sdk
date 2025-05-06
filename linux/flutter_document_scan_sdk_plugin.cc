@@ -87,8 +87,7 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     }
     const char *filename = fl_value_get_string(value);
 
-    g_autoptr(FlValue) result = self->manager->DetectFile(method_call, filename);
-    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+    self->manager->DetectFile(method_call, filename);
   }
   else if (strcmp(method, "detectBuffer") == 0)
   {
@@ -140,8 +139,7 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     }
     int rotation = fl_value_get_int(value);
 
-    g_autoptr(FlValue) result = self->manager->DetectBuffer(method_call, bytes, width, height, stride, format, rotation);
-    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+    self->manager->DetectBuffer(method_call, bytes, width, height, stride, format, rotation);
   }
   else if (strcmp(method, "normalizeBuffer") == 0)
   {
@@ -321,7 +319,8 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     }
     int y4 = fl_value_get_int(value);
 
-    self->manager->NormalizeFile(method_call, filename, x1, y1, x2, y2, x3, y3, x4, y4);
+    g_autoptr(FlValue) result = self->manager->NormalizeFile(method_call, filename, x1, y1, x2, y2, x3, y3, x4, y4);
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }
   else
   {
@@ -349,7 +348,6 @@ static void flutter_document_scan_sdk_plugin_class_init(FlutterDocumentScanSdkPl
 static void flutter_document_scan_sdk_plugin_init(FlutterDocumentScanSdkPlugin *self)
 {
   self->manager = new DocumentManager();
-  self->manager->Init();
 }
 
 static void method_call_cb(FlMethodChannel *channel, FlMethodCall *method_call,
