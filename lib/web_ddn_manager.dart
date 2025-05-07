@@ -117,7 +117,7 @@ class DDNManager {
   /// [points] - points of the document.
   /// Returns a [NormalizedImage].
   Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width,
-      int height, int stride, int format, dynamic points) async {
+      int height, int stride, int format, dynamic points, int rotation) async {
     List<dynamic> jsOffsets = points.map((Offset offset) {
       return {'x': offset.dx, 'y': offset.dy};
     }).toList();
@@ -182,8 +182,8 @@ class DDNManager {
   /// [stride] - stride of the image.
   /// [format] - format of the image.
   /// Returns a [List] of [DocumentResult].
-  Future<List<DocumentResult>> detectBuffer(
-      Uint8List bytes, int width, int height, int stride, int format) async {
+  Future<List<DocumentResult>> detectBuffer(Uint8List bytes, int width,
+      int height, int stride, int format, int rotation) async {
     if (_normalizer != null) {
       String pixelFormat = 'rgba';
       if (format == ImagePixelFormat.IPF_GRAYSCALED.index) {

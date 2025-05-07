@@ -12,13 +12,6 @@ class MethodChannelFlutterDocumentScanSdk
   @visibleForTesting
   final methodChannel = const MethodChannel('flutter_document_scan_sdk');
 
-  @override
-  Future<String?> getPlatformVersion() async {
-    final version =
-        await methodChannel.invokeMethod<String>('getPlatformVersion');
-    return version;
-  }
-
   /// Initialize the SDK
   @override
   Future<int?> init(String key) async {

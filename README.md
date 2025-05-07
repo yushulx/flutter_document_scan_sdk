@@ -1,109 +1,64 @@
 # Flutter Document Detection SDK
-The Flutter plugin is a wrapper for Dynamsoft's [Document Normalizer SDK v1.x](https://www.dynamsoft.com/document-normalizer/docs/introduction/). It enables you to build document detection and rectification applications for **Windows**, **Linux**, **web**, **Android** and **iOS**.
-
-## License Key
-To use the SDK, you need a [license key for Dynamsoft Document Normalizer](https://www.dynamsoft.com/customer/license/trialLicense/?product=dcv&package=cross-platform). Make sure to get your trial or commercial license before using the library.
-
-
-## Try Document Rectification Example
-
-```bash
-cd example
-flutter run # for Android
-flutter run -d chrome # for Web
-flutter run -d windows # for Windows
-```
-
-![Flutter web document edge detection and normalization](https://www.dynamsoft.com/codepool/img/2024/10/flutter-document-scanner-detection-rectification.png)
-
+A Flutter wrapper for the **Dynamsoft Capture Vision SDK**, featuring document detection and rectification.
 
 ## Supported Platforms
-- Web
-- Windows
-- Linux
-- Android
-- iOS
-
-## Installation
-Add `flutter_document_scan_sdk` as a dependency in your `pubspec.yaml` file.
-
-```yml
-dependencies:
-    ...
-    flutter_document_scan_sdk:
-```
-
-### One More Step for Web
-Include the JavaScript library of Dynamsoft Document Normalizer in your `index.html` file:
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/dynamsoft-capture-vision-bundle@2.6.1000/dist/dcv.bundle.min.js"></script>
-```
-
-## API Compatibility
-| Methods      | Android |    iOS | Windows | Linux | Web|
-| ----------- | ----------- | ----------- | ----------- |----------- |----------- |
-| `Future<int?> init(String key)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:      | :heavy_check_mark:      |:heavy_check_mark:      | 
-| `Future<List<DocumentResult>?> detectFile(String file)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:     |
-| `Future<NormalizedImage?> normalizeFile(String file, dynamic points)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:     |
-| `Future<int?> setParameters(String params)`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | 
-| `Future<String?> getParameters()`     | :heavy_check_mark:       | :heavy_check_mark:   | :heavy_check_mark:       | :heavy_check_mark:       |:heavy_check_mark:      | 
-| `Future<List<DocumentResult>?> detectBuffer(Uint8List bytes, int width, int height, int stride, int format)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:      |
-| `Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width, int height, int stride, int format, dynamic points)`     | :heavy_check_mark:      | :heavy_check_mark:   | :heavy_check_mark:      |:heavy_check_mark:      | :heavy_check_mark:     |
-
-## Usage
-- Initialize the document rectification SDK with a valid license key:
-
-     ```dart
-    final _flutterDocumentScanSdkPlugin = FlutterDocumentScanSdk();
-    await _flutterDocumentScanSdkPlugin.init(
-        "LICENSE-KEY");
-
-    await _flutterDocumentScanSdkPlugin.setParameters(Template.grayscale);
+- ✅ Windows
+- ✅ Linux
+- ✅ Android
+- ✅ iOS
+    
+    Add camera and microphone usage descriptions to `ios/Runner/Info.plist`:
+    
+    ```xml
+    <key>NSCameraUsageDescription</key>
+    <string>Can I use the camera please?</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Can I use the mic please?</string>
     ```
 
-- Do document edge detection and return quadrilaterals:
+- ✅ Web
+        
+    In `index.html`, include:
 
-    ```dart
-    List<DocumentResult>? detectionResults =
-            await _flutterDocumentScanSdkPlugin
-                .detectFile(file);
+    ```html
+    <script src="https://cdn.jsdelivr.net/npm/dynamsoft-capture-vision-bundle@2.6.1000/dist/dcv.bundle.min.js"></script>
     ```
-- Detect document edges from a buffer:
+
+
+## Prerequisites
+- A valid [Dynamsoft Capture Vision license key](https://www.dynamsoft.com/customer/license/trialLicense/?product=dcv&package=cross-platform)
+
+## Getting Started
+1. Set the license key in `example/lib/global.dart`:
 
     ```dart
-    List<DocumentResult>? detectionResults =
-            await _flutterDocumentScanSdkPlugin
-                .detectBuffer(bytes, width, height, stride, format);
-    ```
-- Rectify the document based on document corners:
-
-    ```dart
-    NormalizedImage? normalizedImage = await _flutterDocumentScanSdkPlugin.normalizeFile(
-        file, detectionResults[0].points);
-    ```
-- Rectify the document based on document corners from a buffer:
-
-    ```dart
-    NormalizedImage? normalizedImage = await _flutterDocumentScanSdkPlugin.normalizeBuffer(
-        bytes, width, height, stride, format, detectionResults[0].points);
-    ```
-- Save the rectified document image to a file:
-
-    ```dart
-    if (normalizedUiImage != null) {
-        const String mimeType = 'image/png';
-        ByteData? data = await normalizedUiImage!
-            .toByteData(format: ui.ImageByteFormat.png);
-        if (data != null) {
-            final XFile imageFile = XFile.fromData(
-                data.buffer.asUint8List(),
-                mimeType: mimeType,
-            );
-            await imageFile.saveTo(path);
-        }
+    Future<int> initDocumentSDK() async {
+      int? ret = await docScanner.init(
+          "LICENSE-KEY");
+      ...
     }
     ```
+2. Run the example project on your desired platform:
 
+    ```bash
+    cd example
+    flutter run -d chrome    # Run on Web
+    flutter run -d linux     # Run on Linux
+    flutter run -d windows   # Run on Windows
+    flutter run              # Run on default connected device (e.g., Android)
+    ```
+```
+
+## API Reference
+
+| Method | Description | Parameters | Return Type |
+|--------|-------------|------------|-------------|
+| `Future<int?> init(String key)` | Initializes the SDK with a license key. | `key`: License string | `Future<int?>` |
+| `Future<NormalizedImage?> normalizeFile(String file, dynamic points)` | Normalizes a document image from a file. | `file`: Path to the image file <br> `points`: Document corner points | `Future<NormalizedImage?>` |
+| `Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width, int height, int stride, int format, dynamic points, int rotation)` | Normalizes a document image from a raw image buffer. | `bytes`: Image buffer <br> `width`, `height`: Image dimensions <br> `stride`: Row stride in bytes <br> `format`: Image pixel format index <br> `points`: Document corner points <br> `rotation`: 0/90/180/270 | `Future<NormalizedImage?>` |
+| `Future<List<DocumentResult>?> detectFile(String file)` | Detects documents in an image file. | `file`: Path to the image file | `Future<List<DocumentResult>?>` |
+| `Future<List<DocumentResult>?> detectBuffer(Uint8List bytes, int width, int height, int stride, int format, int rotation)` | Detects documents from a raw image buffer. | `bytes`: Image buffer <br> `width`, `height`: Image dimensions <br> `stride`: Row stride in bytes <br> `format`: Image pixel format index <br> `rotation`: 0/90/180/270 | `Future<List<DocumentResult>?>` |
+| `Future<int?> setParameters(String params)` | Sets scanner parameters via a JSON string. | `params`: JSON string with scanner configuration | `Future<int?>` |
+| `Future<String?> getParameters()` | Gets the current parameters as a JSON string. | *(none)* | `Future<String?>` |
 
 
