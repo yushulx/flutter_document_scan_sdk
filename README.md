@@ -47,6 +47,10 @@ A Flutter wrapper for the **Dynamsoft Capture Vision SDK**, featuring document d
     flutter run -d windows   # Run on Windows
     flutter run              # Run on default connected device (e.g., Android)
     ```
+    
+    ![Flutter document scanner for Windows](https://www.dynamsoft.com/codepool/img/2025/05/flutter-document-scanner-windows.png)
+
+    ![Flutter document scanner normalization for Windows](https://www.dynamsoft.com/codepool/img/2025/05/flutter-document-scanner-normalization-windows.png)
 
 ## API Reference
 

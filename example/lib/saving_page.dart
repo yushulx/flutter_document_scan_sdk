@@ -95,7 +95,7 @@ class _SavingPageState extends State<SavingPage> {
                     },
                   ),
                 ),
-                const Text('Binary', style: TextStyle(color: Colors.white)),
+                const Text('B/W', style: TextStyle(color: Colors.white)),
                 Theme(
                     data: Theme.of(context).copyWith(
                       unselectedWidgetColor:
