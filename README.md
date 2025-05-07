@@ -47,7 +47,6 @@ A Flutter wrapper for the **Dynamsoft Capture Vision SDK**, featuring document d
     flutter run -d windows   # Run on Windows
     flutter run              # Run on default connected device (e.g., Android)
     ```
-```
 
 ## API Reference
 
