@@ -57,11 +57,10 @@ A Flutter wrapper for the **Dynamsoft Capture Vision SDK**, featuring document d
 | Method | Description | Parameters | Return Type |
 |--------|-------------|------------|-------------|
 | `Future<int?> init(String key)` | Initializes the SDK with a license key. | `key`: License string | `Future<int?>` |
-| `Future<NormalizedImage?> normalizeFile(String file, dynamic points)` | Normalizes a document image from a file. | `file`: Path to the image file <br> `points`: Document corner points | `Future<NormalizedImage?>` |
-| `Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width, int height, int stride, int format, dynamic points, int rotation)` | Normalizes a document image from a raw image buffer. | `bytes`: Image buffer <br> `width`, `height`: Image dimensions <br> `stride`: Row stride in bytes <br> `format`: Image pixel format index <br> `points`: Document corner points <br> `rotation`: 0/90/180/270 | `Future<NormalizedImage?>` |
+| `Future<NormalizedImage?> normalizeFile(String file, dynamic points, ColorMode color)` | Normalizes a document image from a file. | `file`: Path to the image file <br> `points`: Document corner points <br> `color`: output image color | `Future<NormalizedImage?>` |
+| `Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width, int height, int stride, int format, dynamic points, int rotation, ColorMode color)` | Normalizes a document image from a raw image buffer. | `bytes`: Image buffer <br> `width`, `height`: Image dimensions <br> `stride`: Row stride in bytes <br> `format`: Image pixel format index <br> `points`: Document corner points <br> `rotation`: 0/90/180/270 <br> `color`: output image color | `Future<NormalizedImage?>` |
 | `Future<List<DocumentResult>?> detectFile(String file)` | Detects documents in an image file. | `file`: Path to the image file | `Future<List<DocumentResult>?>` |
 | `Future<List<DocumentResult>?> detectBuffer(Uint8List bytes, int width, int height, int stride, int format, int rotation)` | Detects documents from a raw image buffer. | `bytes`: Image buffer <br> `width`, `height`: Image dimensions <br> `stride`: Row stride in bytes <br> `format`: Image pixel format index <br> `rotation`: 0/90/180/270 | `Future<List<DocumentResult>?>` |
-| `Future<int?> setParameters(String params)` | Sets scanner parameters via a JSON string. | `params`: JSON string with scanner configuration | `Future<int?>` |
-| `Future<String?> getParameters()` | Gets the current parameters as a JSON string. | *(none)* | `Future<String?>` |
+
 
 

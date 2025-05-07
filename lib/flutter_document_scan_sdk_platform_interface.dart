@@ -5,6 +5,18 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'document_result.dart';
 import 'flutter_document_scan_sdk_method_channel.dart';
 
+/// Color of the document.
+enum ColorMode {
+  /// Color
+  COLOR,
+
+  /// Grayscale
+  GRAYSCALE,
+
+  /// Black and white
+  BLACK_AND_WHITE,
+}
+
 /// Image pixel format.
 enum ImagePixelFormat {
   /// 0:Black, 1:White
@@ -85,21 +97,25 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
     throw UnimplementedError('init() has not been implemented.');
   }
 
-  Future<NormalizedImage?> normalizeFile(String file, dynamic points) {
+  Future<NormalizedImage?> normalizeFile(
+      String file, dynamic points, ColorMode color) {
     throw UnimplementedError('normalizeFile() has not been implemented.');
   }
 
-  Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width,
-      int height, int stride, int format, dynamic points, int rotation) {
+  Future<NormalizedImage?> normalizeBuffer(
+      Uint8List bytes,
+      int width,
+      int height,
+      int stride,
+      int format,
+      dynamic points,
+      int rotation,
+      ColorMode color) {
     throw UnimplementedError('normalizeBuffer() has not been implemented.');
   }
 
   Future<List<DocumentResult>?> detectFile(String file) {
     throw UnimplementedError('detectFile() has not been implemented.');
-  }
-
-  Future<int?> save(String filename) {
-    throw UnimplementedError('save() has not been implemented.');
   }
 
   Future<int?> setParameters(String params) {

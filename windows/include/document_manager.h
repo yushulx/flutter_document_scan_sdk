@@ -450,7 +450,7 @@ public:
         start(CPresetTemplate::PT_DETECT_DOCUMENT_BOUNDARIES);
     }
 
-    void NormalizeFile(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    void NormalizeFile(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int color)
     {
         EncodableMap out;
 
@@ -473,6 +473,7 @@ public:
         quad.points[3][1] = y4;
         settings.roi = quad;
         settings.roiMeasuredInPercentage = 0;
+        settings.documentSettings.colourMode = (ImageColourMode)color;
 
         char errorMsgBuffer[512];
         int ret = cvr->UpdateSettings(CPresetTemplate::PT_NORMALIZE_DOCUMENT, &settings, errorMsgBuffer, 512);
@@ -486,7 +487,7 @@ public:
         pendingResult->Success(out);
     }
 
-    void NormalizeBuffer(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const unsigned char *buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int rotation)
+    void NormalizeBuffer(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const unsigned char *buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int rotation, int color)
     {
         EncodableMap out;
         if (!cvr)
@@ -508,6 +509,7 @@ public:
         quad.points[3][1] = y4;
         settings.roi = quad;
         settings.roiMeasuredInPercentage = 0;
+        settings.documentSettings.colourMode = (ImageColourMode)color;
 
         char errorMsgBuffer[512];
         int ret = cvr->UpdateSettings(CPresetTemplate::PT_NORMALIZE_DOCUMENT, &settings, errorMsgBuffer, 512);

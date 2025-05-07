@@ -461,7 +461,7 @@ public:
         start(CPresetTemplate::PT_DETECT_DOCUMENT_BOUNDARIES);
     }
 
-    FlValue *NormalizeFile(FlMethodCall *method_call, const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    FlValue *NormalizeFile(FlMethodCall *method_call, const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int color)
     {
         FlValue *out = NULL;
         if (!cvr)
@@ -485,6 +485,7 @@ public:
         quad.points[3][1] = y4;
         settings.roi = quad;
         settings.roiMeasuredInPercentage = 0;
+        settings.documentSettings.colourMode = (ImageColourMode)color;
 
         char errorMsgBuffer[512];
         int ret = cvr->UpdateSettings(CPresetTemplate::PT_NORMALIZE_DOCUMENT, &settings, errorMsgBuffer, 512);
@@ -498,7 +499,7 @@ public:
         return out;
     }
 
-    FlValue *NormalizeBuffer(FlMethodCall *method_call, const unsigned char *buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int rotation)
+    FlValue *NormalizeBuffer(FlMethodCall *method_call, const unsigned char *buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int rotation, int color)
     {
         FlValue *out = NULL;
         if (!cvr)
@@ -522,6 +523,7 @@ public:
         quad.points[3][1] = y4;
         settings.roi = quad;
         settings.roiMeasuredInPercentage = 0;
+        settings.documentSettings.colourMode = (ImageColourMode)color;
 
         char errorMsgBuffer[512];
         int ret = cvr->UpdateSettings(CPresetTemplate::PT_NORMALIZE_DOCUMENT, &settings, errorMsgBuffer, 512);

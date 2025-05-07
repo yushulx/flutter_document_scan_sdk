@@ -75,7 +75,8 @@
         "queue": "cpp",
         "array": "cpp",
         "coroutine": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "codecvt": "cpp"
     },
     "java.configuration.updateBuildConfiguration": "automatic",
     "editor.formatOnSave": true

@@ -43,9 +43,8 @@ class _SavingPageState extends State<SavingPage> {
   }
 
   Future<int> initDocumentState() async {
-    await docScanner.setParameters(Template.color);
     await normalizeBuffer(widget.documentData.image!,
-        widget.documentData.documentResults![0].points);
+        widget.documentData.documentResults![0].points, ColorMode.COLOR);
     return 0;
   }
 
@@ -86,11 +85,11 @@ class _SavingPageState extends State<SavingPage> {
                         _pixelFormat = value!;
                       });
 
-                      await docScanner.setParameters(Template.binary);
-
                       if (widget.documentData.documentResults!.isNotEmpty) {
-                        await normalizeBuffer(widget.documentData.image!,
-                            widget.documentData.documentResults![0].points);
+                        await normalizeBuffer(
+                            widget.documentData.image!,
+                            widget.documentData.documentResults![0].points,
+                            ColorMode.BLACK_AND_WHITE);
                       }
                     },
                   ),
@@ -110,11 +109,11 @@ class _SavingPageState extends State<SavingPage> {
                           _pixelFormat = value!;
                         });
 
-                        await docScanner.setParameters(Template.grayscale);
-
                         if (widget.documentData.documentResults!.isNotEmpty) {
-                          await normalizeBuffer(widget.documentData.image!,
-                              widget.documentData.documentResults![0].points);
+                          await normalizeBuffer(
+                              widget.documentData.image!,
+                              widget.documentData.documentResults![0].points,
+                              ColorMode.GRAYSCALE);
                         }
                       },
                     )),
@@ -133,11 +132,11 @@ class _SavingPageState extends State<SavingPage> {
                           _pixelFormat = value!;
                         });
 
-                        await docScanner.setParameters(Template.color);
-
                         if (widget.documentData.documentResults!.isNotEmpty) {
-                          await normalizeBuffer(widget.documentData.image!,
-                              widget.documentData.documentResults![0].points);
+                          await normalizeBuffer(
+                              widget.documentData.image!,
+                              widget.documentData.documentResults![0].points,
+                              ColorMode.COLOR);
                         }
                       },
                     )),
@@ -198,8 +197,9 @@ class _SavingPageState extends State<SavingPage> {
     );
   }
 
-  Future<void> normalizeFile(String file, dynamic points) async {
-    normalizedImage = await docScanner.normalizeFile(file, points);
+  Future<void> normalizeFile(
+      String file, dynamic points, ColorMode color) async {
+    normalizedImage = await docScanner.normalizeFile(file, points, color);
     if (normalizedImage != null) {
       decodeImageFromPixels(normalizedImage!.data, normalizedImage!.width,
           normalizedImage!.height, PixelFormat.rgba8888, (ui.Image img) {
@@ -209,7 +209,8 @@ class _SavingPageState extends State<SavingPage> {
     }
   }
 
-  Future<void> normalizeBuffer(ui.Image sourceImage, dynamic points) async {
+  Future<void> normalizeBuffer(
+      ui.Image sourceImage, dynamic points, ColorMode color) async {
     ByteData? byteData =
         await sourceImage.toByteData(format: ui.ImageByteFormat.rawRgba);
 
@@ -220,7 +221,7 @@ class _SavingPageState extends State<SavingPage> {
     int format = ImagePixelFormat.IPF_ARGB_8888.index;
 
     normalizedImage = await docScanner.normalizeBuffer(bytes, width, height,
-        stride, format, points, ImageRotation.rotation0.value);
+        stride, format, points, ImageRotation.rotation0.value, color);
     if (normalizedImage != null) {
       decodeImageFromPixels(normalizedImage!.data, normalizedImage!.width,
           normalizedImage!.height, PixelFormat.rgba8888, (ui.Image img) {

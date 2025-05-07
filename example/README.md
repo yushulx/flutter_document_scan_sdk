@@ -22,7 +22,6 @@ https://github.com/user-attachments/assets/45b47b3a-f5c9-40c8-a943-0f28baf9e508
         int? ret = await docScanner.init(
             'LICENSE-KEY');
         if (ret == 0) isLicenseValid = true;
-        await docScanner.setParameters(Template.color);
         return ret ?? -1;
     }
     ```

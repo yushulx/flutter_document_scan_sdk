@@ -17,10 +17,13 @@ class FlutterDocumentScanSdk {
   /// Parameters:
   /// - [file]: path to the file.
   /// - [points]: document points.
+  /// - [color]: color mode.
   ///
   /// Returns a [NormalizedImage] on success, or `null` if the image could not be normalized.
-  Future<NormalizedImage?> normalizeFile(String file, dynamic points) {
-    return FlutterDocumentScanSdkPlatform.instance.normalizeFile(file, points);
+  Future<NormalizedImage?> normalizeFile(
+      String file, dynamic points, ColorMode color) {
+    return FlutterDocumentScanSdkPlatform.instance
+        .normalizeFile(file, points, color);
   }
 
   /// Normalizes the image.
@@ -33,12 +36,20 @@ class FlutterDocumentScanSdk {
   /// - [format]: image format.
   /// - [points]: document points.
   /// - [rotation]: image rotation.
+  /// - [color]: color mode.
   ///
   /// Returns a [NormalizedImage] on success, or `null` if the image could not be normalized.
-  Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width,
-      int height, int stride, int format, dynamic points, int rotation) async {
+  Future<NormalizedImage?> normalizeBuffer(
+      Uint8List bytes,
+      int width,
+      int height,
+      int stride,
+      int format,
+      dynamic points,
+      int rotation,
+      ColorMode color) async {
     return FlutterDocumentScanSdkPlatform.instance.normalizeBuffer(
-        bytes, width, height, stride, format, points, rotation);
+        bytes, width, height, stride, format, points, rotation, color);
   }
 
   /// Detects documents in the given image file.

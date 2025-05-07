@@ -246,7 +246,14 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     }
     int rotation = fl_value_get_int(value);
 
-    g_autoptr(FlValue) result = self->manager->NormalizeBuffer(method_call, bytes, width, height, stride, format, x1, y1, x2, y2, x3, y3, x4, y4, rotation);
+    value = fl_value_lookup_string(args, "color");
+    if (value == nullptr)
+    {
+      return;
+    }
+    int color = fl_value_get_int(value);
+
+    g_autoptr(FlValue) result = self->manager->NormalizeBuffer(method_call, bytes, width, height, stride, format, x1, y1, x2, y2, x3, y3, x4, y4, rotation, color);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }
   else if (strcmp(method, "normalizeFile") == 0)
@@ -319,7 +326,14 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     }
     int y4 = fl_value_get_int(value);
 
-    g_autoptr(FlValue) result = self->manager->NormalizeFile(method_call, filename, x1, y1, x2, y2, x3, y3, x4, y4);
+    value = fl_value_lookup_string(args, "color");
+    if (value == nullptr)
+    {
+      return;
+    }
+    int color = fl_value_get_int(value);
+
+    g_autoptr(FlValue) result = self->manager->NormalizeFile(method_call, filename, x1, y1, x2, y2, x3, y3, x4, y4, color);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }
   else

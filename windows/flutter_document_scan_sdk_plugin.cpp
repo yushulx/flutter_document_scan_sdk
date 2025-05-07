@@ -159,7 +159,7 @@ namespace flutter_document_scan_sdk
       std::vector<unsigned char> bytes;
       EncodableMap results;
       int width = 0, height = 0, stride = 0, format = 0;
-      int x1 = 0, y1 = 0, x2 = 0, y2 = 0, x3 = 0, y3 = 0, x4 = 0, y4 = 0, rotation;
+      int x1 = 0, y1 = 0, x2 = 0, y2 = 0, x3 = 0, y3 = 0, x4 = 0, y4 = 0, rotation = 0, color = 0;
 
       if (arguments)
       {
@@ -246,14 +246,20 @@ namespace flutter_document_scan_sdk
         {
           rotation = std::get<int>(rotation_it->second);
         }
+
+        auto color_it = arguments->find(EncodableValue("color"));
+        if (color_it != arguments->end())
+        {
+          color = std::get<int>(color_it->second);
+        }
       }
-      manager->NormalizeBuffer(result, reinterpret_cast<unsigned char *>(bytes.data()), width, height, stride, format, x1, y1, x2, y2, x3, y3, x4, y4, rotation);
+      manager->NormalizeBuffer(result, reinterpret_cast<unsigned char *>(bytes.data()), width, height, stride, format, x1, y1, x2, y2, x3, y3, x4, y4, rotation, color);
     }
     else if (method_call.method_name().compare("normalizeFile") == 0)
     {
       std::string filename;
       EncodableMap results;
-      int x1 = 0, y1 = 0, x2 = 0, y2 = 0, x3 = 0, y3 = 0, x4 = 0, y4 = 0;
+      int x1 = 0, y1 = 0, x2 = 0, y2 = 0, x3 = 0, y3 = 0, x4 = 0, y4 = 0, color = 0;
 
       if (arguments)
       {
@@ -310,9 +316,15 @@ namespace flutter_document_scan_sdk
         {
           y4 = std::get<int>(y4_it->second);
         }
+
+        auto color_it = arguments->find(EncodableValue("color"));
+        if (color_it != arguments->end())
+        {
+          color = std::get<int>(color_it->second);
+        }
       }
 
-      manager->NormalizeFile(result, filename.c_str(), x1, y1, x2, y2, x3, y3, x4, y4);
+      manager->NormalizeFile(result, filename.c_str(), x1, y1, x2, y2, x3, y3, x4, y4, color);
     }
     else
     {
