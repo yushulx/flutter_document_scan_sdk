@@ -105,7 +105,7 @@ class MethodChannelFlutterDocumentScanSdk
         offsets.add(Offset(x2.toDouble(), y2.toDouble()));
         offsets.add(Offset(x3.toDouble(), y3.toDouble()));
         offsets.add(Offset(x4.toDouble(), y4.toDouble()));
-        DocumentResult documentResult = DocumentResult(confidence, offsets, []);
+        DocumentResult documentResult = DocumentResult(confidence, offsets);
         output.add(documentResult);
       }
     }

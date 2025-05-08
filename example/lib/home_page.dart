@@ -87,7 +87,7 @@ class _HomePageState extends State<HomePage> {
         openResultPage(
             DocumentData(
               image: image,
-              documentResults: <DocumentResult>[DocumentResult(0, points, 0)],
+              documentResults: <DocumentResult>[DocumentResult(0, points)],
             ),
             false);
       }

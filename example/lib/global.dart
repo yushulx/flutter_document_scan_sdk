@@ -97,7 +97,7 @@ List<DocumentResult> rotate90document(List<DocumentResult>? input, int height) {
       Offset(height - y3, x3),
       Offset(height - y4, x4)
     ];
-    DocumentResult newResult = DocumentResult(result.confidence, points, []);
+    DocumentResult newResult = DocumentResult(result.confidence, points);
 
     output.add(newResult);
   }
