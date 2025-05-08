@@ -123,7 +123,7 @@ class MethodChannelFlutterDocumentScanSdk
   /// Returns a [NormalizedImage] on success, or `null` if the image could not be normalized.
   @override
   Future<NormalizedImage?> normalizeFile(
-      String file, dynamic points, ColorMode color) async {
+      String file, List<Offset> points, ColorMode color) async {
     Offset offset = points[0];
     int x1 = offset.dx.toInt();
     int y1 = offset.dy.toInt();
@@ -196,7 +196,7 @@ class MethodChannelFlutterDocumentScanSdk
       int height,
       int stride,
       int format,
-      dynamic points,
+      List<Offset> points,
       int rotation,
       ColorMode color) async {
     Offset offset = points[0];

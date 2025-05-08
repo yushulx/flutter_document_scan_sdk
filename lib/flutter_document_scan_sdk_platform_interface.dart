@@ -107,7 +107,7 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
   }
 
   Future<NormalizedImage?> normalizeFile(
-      String file, dynamic points, ColorMode color) {
+      String file, List<Offset> points, ColorMode color) {
     throw UnimplementedError('normalizeFile() has not been implemented.');
   }
 
@@ -117,7 +117,7 @@ abstract class FlutterDocumentScanSdkPlatform extends PlatformInterface {
       int height,
       int stride,
       int format,
-      dynamic points,
+      List<Offset> points,
       int rotation,
       ColorMode color) {
     throw UnimplementedError('normalizeBuffer() has not been implemented.');

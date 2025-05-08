@@ -7,7 +7,6 @@ import 'dart:async';
 
 import 'package:flutter_document_scan_sdk/document_result.dart';
 import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk_platform_interface.dart';
-import 'package:flutter_document_scan_sdk/template.dart';
 import 'package:flutter_document_scan_sdk/normalized_image.dart';
 import 'dart:ui' as ui;
 import 'package:shared_preferences/shared_preferences.dart';

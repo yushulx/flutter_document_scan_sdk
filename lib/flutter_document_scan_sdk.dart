@@ -21,7 +21,7 @@ class FlutterDocumentScanSdk {
   ///
   /// Returns a [NormalizedImage] on success, or `null` if the image could not be normalized.
   Future<NormalizedImage?> normalizeFile(
-      String file, dynamic points, ColorMode color) {
+      String file, List<Offset> points, ColorMode color) {
     return FlutterDocumentScanSdkPlatform.instance
         .normalizeFile(file, points, color);
   }
@@ -45,7 +45,7 @@ class FlutterDocumentScanSdk {
       int height,
       int stride,
       int format,
-      dynamic points,
+      List<Offset> points,
       int rotation,
       ColorMode color) async {
     return FlutterDocumentScanSdkPlatform.instance.normalizeBuffer(

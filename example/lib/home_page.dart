@@ -7,7 +7,6 @@ import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk_platform_int
 import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'editing_page.dart';
-import 'utils.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'dart:ui' as ui;

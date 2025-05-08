@@ -34,7 +34,7 @@ class FlutterDocumentScanSdkWeb extends FlutterDocumentScanSdkPlatform {
   /// Returns a [NormalizedImage] on success, or `null` if the image could not be normalized.
   @override
   Future<NormalizedImage?> normalizeFile(
-      String file, dynamic points, ColorMode color) async {
+      String file, List<Offset> points, ColorMode color) async {
     return _ddnManager.normalizeFile(file, points, color);
   }
 
@@ -57,7 +57,7 @@ class FlutterDocumentScanSdkWeb extends FlutterDocumentScanSdkPlatform {
       int height,
       int stride,
       int format,
-      dynamic points,
+      List<Offset> points,
       int rotation,
       ColorMode color) async {
     return _ddnManager.normalizeBuffer(

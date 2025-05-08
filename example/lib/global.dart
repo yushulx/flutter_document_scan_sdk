@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_document_scan_sdk/document_result.dart';
 import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk.dart';
-import 'package:flutter_document_scan_sdk/template.dart';
 import 'dart:ui' as ui;
 
 FlutterDocumentScanSdk docScanner = FlutterDocumentScanSdk();

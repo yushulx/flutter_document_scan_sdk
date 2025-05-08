@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'global.dart';
 import 'history_page.dart';
 
-import 'about_page.dart';
 import 'home_page.dart';
 
 class TabPage extends StatefulWidget {
