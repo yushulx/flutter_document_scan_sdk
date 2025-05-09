@@ -2,7 +2,7 @@ import DynamsoftCaptureVisionRouter
 
 import DynamsoftCore
 
-import DynamsoftDocumentcvr
+import DynamsoftDocumentNormalizer
 
 import DynamsoftLicense
 
@@ -24,18 +24,19 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
 
-    public fund createNormalizedImage(_ result: CaptureResult) -> NSDictionary {
+    public func createNormalizedImage(_ result: CapturedResult) -> NSDictionary {
         let dictionary = NSMutableDictionary()
 
-        if let item = normalizedResults.items?.first, item.type == .normalizedImage {
-            let imageData = try? imageItem.imageData
-            let width = imageData.width
-            let height = imageData.height
-            let stride = imageData.stride
-            let format = imageData.format
-            let data = imageData.bytes
-            let length = data!.count
-            let orientation = imageData.orientation
+        if let item = result.items?.first, item.type == .normalizedImage {
+            let imageItem : NormalizedImageResultItem = item as! NormalizedImageResultItem
+            let imageData = imageItem.imageData
+            let width = imageData!.width
+            let height = imageData!.height
+            let stride = imageData!.stride
+            let format = imageData!.format
+            let data = imageData!.bytes
+            let length = data.count
+            let orientation = imageData!.orientation
 
             dictionary.setObject(width, forKey: "width" as NSCopying)
             dictionary.setObject(height, forKey: "height" as NSCopying)
@@ -44,34 +45,34 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             dictionary.setObject(orientation, forKey: "orientation" as NSCopying)
             dictionary.setObject(length, forKey: "length" as NSCopying)
 
-            var rgba: [UInt8] = [UInt8](repeating: 0, count: width * height * 4)
+            var rgba: [UInt8] = [UInt8](repeating: 0, count: Int(width * height) * 4)
 
-            if format == ImagePixelFormat.RGB_888 {
+            if format == ImagePixelFormat.RGB888 {
                 var dataIndex = 0
                 for i in 0..<height {
                     for j in 0..<width {
                         let index = i * width + j
-                        rgba[index * 4] = data![dataIndex]  // red
-                        rgba[index * 4 + 1] = data![dataIndex + 1]  // green
-                        rgba[index * 4 + 2] = data![dataIndex + 2]  // blue
-                        rgba[index * 4 + 3] = 255  // alpha
+                        rgba[Int(index) * 4] = data[dataIndex]  // red
+                        rgba[Int(index) * 4 + 1] = data[dataIndex + 1]  // green
+                        rgba[Int(index) * 4 + 2] = data[dataIndex + 2]  // blue
+                        rgba[Int(index) * 4 + 3] = 255  // alpha
                         dataIndex += 3
                     }
                 }
-            } else if format == ImagePixelFormat.grayScaled || format == ImagePixelFormat.binaryInverted || format == ImagePixelFormat.binary_8 {
+            } else if format == ImagePixelFormat.grayScaled || format == ImagePixelFormat.binaryInverted || format == ImagePixelFormat.binary8 {
                 var dataIndex = 0
                 for i in 0..<height {
                     for j in 0..<width {
                         let index = i * width + j
-                        rgba[index * 4] = data![dataIndex]
-                        rgba[index * 4 + 1] = data![dataIndex]
-                        rgba[index * 4 + 2] = data![dataIndex]
-                        rgba[index * 4 + 3] = 255
+                        rgba[Int(index) * 4] = data[dataIndex]
+                        rgba[Int(index) * 4 + 1] = data[dataIndex]
+                        rgba[Int(index) * 4 + 2] = data[dataIndex]
+                        rgba[Int(index) * 4 + 3] = 255
                         dataIndex += 1
                     }
                 }
             } else if format == ImagePixelFormat.binary {
-                var grayscale: [UInt8] = [UInt8](repeating: 0, count: width * height)
+                var grayscale: [UInt8] = [UInt8](repeating: 0, count: Int(width * height))
 
                 var index = 0
                 let skip = stride * 8 - width
@@ -79,12 +80,12 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
                 var n = 1
 
                 for i in 0..<length {
-                    let b = data![i]
+                    let b = data[i]
                     var byteCount = 7
                     while byteCount >= 0 {
                         let tmp = (b & (1 << byteCount)) >> byteCount
 
-                        if shift < stride * 8 * n - skip {
+                        if shift < stride * 8 * UInt(n) - skip {
                             if tmp == 1 {
                                 grayscale[index] = 255
                             } else {
@@ -97,7 +98,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
                         shift += 1
                     }
 
-                    if shift == stride * 8 * n {
+                    if shift == Int(stride) * 8 * n {
                         n += 1
                     }
                 }
@@ -106,10 +107,10 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
                 for i in 0..<height {
                     for j in 0..<width {
                         let index = i * width + j
-                        rgba[index * 4] = grayscale[dataIndex]
-                        rgba[index * 4 + 1] = grayscale[dataIndex]
-                        rgba[index * 4 + 2] = grayscale[dataIndex]
-                        rgba[index * 4 + 3] = 255
+                        rgba[Int(index) * 4] = grayscale[dataIndex]
+                        rgba[Int(index) * 4 + 1] = grayscale[dataIndex]
+                        rgba[Int(index) * 4 + 2] = grayscale[dataIndex]
+                        rgba[Int(index) * 4 + 3] = 255
                         dataIndex += 1
                     }
                 }
@@ -120,14 +121,15 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
         return dictionary
     }
 
-    public func createContourList(_ result: CaptureResult) -> NSMutableArray {
-        if let item = CaptureResult.items?.first, item.type == .detectedQuad {
+    public func createContourList(_ result: CapturedResult) -> NSMutableArray {
+        let out = NSMutableArray()
+        if let item = result.items?.first, item.type == .detectedQuad {
             let detectedItem:DetectedQuadResultItem = item as! DetectedQuadResultItem
             
             let dictionary = NSMutableDictionary()
 
-            let confidence = result.confidenceAsDocumentBoundary
-            let points = result.location.points as! [CGPoint]
+            let confidence = detectedItem.confidenceAsDocumentBoundary
+            let points = detectedItem.location.points as! [CGPoint]
 
             dictionary.setObject(confidence, forKey: "confidence" as NSCopying)
             dictionary.setObject(Int(points[0].x), forKey: "x1" as NSCopying)
@@ -141,6 +143,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
 
             out.add(dictionary)
         }
+        return out
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -154,40 +157,25 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
         case "setParameters":
             let arguments: NSDictionary = call.arguments as! NSDictionary
             let params: String = arguments.value(forKey: "params") as! String
-            let ret = cvr.setSettings(params)
-
-            result(Int(ret))
+            let ret: ()? = try? cvr.initSettings(params)
+            result(ret)
 
         case "getParameters":
-            if self.cvr == nil {
-                result("")
-                return
-            }
-
-            result(cvr.getSettings() ?? "")
+            result(try? cvr.outputSettings(""))
         case "detectFile":
-            if self.cvr == nil {
-                result(.none)
-                return
-            }
             let arguments: NSDictionary = call.arguments as! NSDictionary
             DispatchQueue.global().async {
-                let out = NSMutableArray()
+                var out = NSMutableArray()
                 let filename: String = arguments.value(forKey: "file") as! String
                 let detectedResults = self.cvr.captureFromFile(filename, templateName: "DetectDocumentBoundaries_Default")
-                out = self.createContourList(detectedResults!)
+                out = self.createContourList(detectedResults)
 
                 result(out)
             }
         case "detectBuffer":
-            if self.cvr == nil {
-                result(.none)
-                return
-            }
-
             let arguments: NSDictionary = call.arguments as! NSDictionary
             DispatchQueue.global().async {
-                let out = NSMutableArray()
+                var out = NSMutableArray()
                 let buffer: FlutterStandardTypedData =
                     arguments.value(forKey: "bytes") as! FlutterStandardTypedData
                 let width: Int = arguments.value(forKey: "width") as! Int
@@ -205,15 +193,10 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
                 imageData.orientation = rotation
 
                 let detectedResults = self.cvr.captureFromBuffer(imageData, templateName: "DetectDocumentBoundaries_Default")
-                out = self.createContourList(detectedResults!)
+                out = self.createContourList(detectedResults)
                 result(out)
             }
         case "normalizeBuffer":
-            if self.cvr == nil {
-                result(.none)
-                return
-            }
-
             let arguments: NSDictionary = call.arguments as! NSDictionary
 
             let buffer: FlutterStandardTypedData =
@@ -246,8 +229,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
                 CGPoint(x: x1, y: y1), CGPoint(x: x2, y: y2), CGPoint(x: x3, y: y3),
                 CGPoint(x: x4, y: y4),
             ]
-            let quad = Quadrilateral()
-            quad.points = points
+            let quad = Quadrilateral.init(pointArray: points)
 
             var mode = ImageColourMode.colour
 
@@ -255,26 +237,23 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             case 0: mode = ImageColourMode.colour
             case 1: mode = ImageColourMode.grayscale
             case 2: mode = ImageColourMode.binary 
+            default:
+                mode = ImageColourMode.colour
             }
             
-            if let settings = try? self.cvr.getSimplifiedSettings(name) {
+            if let settings = try? self.cvr.getSimplifiedSettings("NormalizeDocument_Default") {
                 settings.documentSettings?.colourMode = mode
                 settings.roi = quad
                 settings.roiMeasuredInPercentage = false
-                try? self.cvr.updateSettings(name, settings: settings)
+                try? self.cvr.updateSettings("NormalizeDocument_Default", settings: settings)
             }
 
             DispatchQueue.global().async {
                 let normalizedResults = self.cvr.captureFromBuffer(imageData, templateName: "NormalizeDocument_Default")
-                let dictionary = self.createNormalizedImage(normalizedResults!)
+                let dictionary = self.createNormalizedImage(normalizedResults)
                 result(dictionary)
             }
         case "normalizeFile":
-            if self.cvr == nil {
-                result(.none)
-                return
-            }
-
             let arguments: NSDictionary = call.arguments as! NSDictionary
 
             let filename: String = arguments.value(forKey: "file") as! String
@@ -292,8 +271,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
                 CGPoint(x: x1, y: y1), CGPoint(x: x2, y: y2), CGPoint(x: x3, y: y3),
                 CGPoint(x: x4, y: y4),
             ]
-            let quad = Quadrilateral()
-            quad.points = points
+            let quad = Quadrilateral.init(pointArray: points)
 
             var mode = ImageColourMode.colour
 
@@ -301,18 +279,20 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             case 0: mode = ImageColourMode.colour
             case 1: mode = ImageColourMode.grayscale
             case 2: mode = ImageColourMode.binary 
+            default:
+                mode = ImageColourMode.colour
             }
 
-            if let settings = try? self.cvr.getSimplifiedSettings(name) {
+            if let settings = try? self.cvr.getSimplifiedSettings("NormalizeDocument_Default") {
                 settings.documentSettings?.colourMode = mode
                 settings.roi = quad
                 settings.roiMeasuredInPercentage = false
-                try? self.cvr.updateSettings(name, settings: settings)
+                try? self.cvr.updateSettings("NormalizeDocument_Default", settings: settings)
             }
 
             DispatchQueue.global().async {
                 let normalizedResults = self.cvr.captureFromFile(filename, templateName: "NormalizeDocument_Default")
-                let dictionary = self.createNormalizedImage(normalizedResults!)
+                let dictionary = self.createNormalizedImage(normalizedResults)
                 result(dictionary)
             }
         default:
