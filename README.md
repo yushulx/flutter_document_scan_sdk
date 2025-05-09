@@ -1,5 +1,16 @@
-# Flutter Document Detection SDK
-A Flutter wrapper for the **Dynamsoft Capture Vision SDK**, featuring document detection and rectification.
+# Flutter Document Scan SDK
+A Flutter wrapper for the **Dynamsoft Capture Vision SDK**, featuring document detection and normalization.
+
+![Flutter document scanner for Windows](https://www.dynamsoft.com/codepool/img/2025/05/flutter-document-scanner-windows.png)
+
+![Flutter document scanner normalization for Windows](https://www.dynamsoft.com/codepool/img/2025/05/flutter-document-scanner-normalization-windows.png)
+    
+## Demo Video
+- iOS
+
+  https://github.com/user-attachments/assets/d6f44994-ea37-4f72-8079-6492f52547d2
+
+  
 
 ## Supported Platforms
 - ✅ Windows
@@ -48,9 +59,7 @@ A Flutter wrapper for the **Dynamsoft Capture Vision SDK**, featuring document d
     flutter run              # Run on default connected device (e.g., Android)
     ```
     
-    ![Flutter document scanner for Windows](https://www.dynamsoft.com/codepool/img/2025/05/flutter-document-scanner-windows.png)
-
-    ![Flutter document scanner normalization for Windows](https://www.dynamsoft.com/codepool/img/2025/05/flutter-document-scanner-normalization-windows.png)
+   
 
 ## API Reference
 
