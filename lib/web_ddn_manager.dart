@@ -1,8 +1,6 @@
 @JS('Dynamsoft')
 library dynamsoft;
 
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk_platform_interface.dart';
 import 'package:flutter_document_scan_sdk/normalized_image.dart';
@@ -112,7 +110,6 @@ class DDNManager {
 
       _cvr = await handleThenable(CaptureVisionRouter.createInstance());
     } catch (e) {
-      print(e);
       return -1;
     }
 
@@ -163,7 +160,6 @@ class DDNManager {
         await handleThenable(
             _cvr!.updateSettings("NormalizeDocument_Default", jsify(params)));
       } catch (e) {
-        print(e);
         return image;
       }
 
@@ -211,7 +207,6 @@ class DDNManager {
         await handleThenable(
             _cvr!.updateSettings("NormalizeDocument_Default", jsify(params)));
       } catch (e) {
-        print(e);
         return image;
       }
 
