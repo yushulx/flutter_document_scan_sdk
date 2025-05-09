@@ -10,7 +10,13 @@ A Flutter wrapper for the **Dynamsoft Capture Vision SDK**, featuring document d
 
   https://github.com/user-attachments/assets/d6f44994-ea37-4f72-8079-6492f52547d2
 
-  
+- Windows
+
+  https://github.com/user-attachments/assets/89113ad1-7699-49a7-ade0-81949cc8ced6
+
+- Web
+
+  https://github.com/user-attachments/assets/3e51915b-c7ad-4406-8ef1-e5cb12fee806
 
 ## Supported Platforms
 - ✅ Windows
