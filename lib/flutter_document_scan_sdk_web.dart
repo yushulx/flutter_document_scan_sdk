@@ -1,9 +1,3 @@
-// In order to *not* need this ignore, consider extracting the "web" version
-// of your plugin as a separate package, instead of inlining it in the same
-// package as the core of your plugin.
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html show window;
-
 import 'package:flutter/services.dart';
 import 'package:flutter_document_scan_sdk/normalized_image.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
@@ -23,70 +17,96 @@ class FlutterDocumentScanSdkWeb extends FlutterDocumentScanSdkPlatform {
     FlutterDocumentScanSdkPlatform.instance = FlutterDocumentScanSdkWeb();
   }
 
-  /// Returns a [String] containing the version of the platform.
-  @override
-  Future<String?> getPlatformVersion() async {
-    final version = html.window.navigator.userAgent;
-    return version;
-  }
-
-  /// Initialize the controller.
+  /// Initializes the SDK using the provided [key].
+  ///
+  /// Returns `0` on success, or a non-zero error code if initialization fails.
   @override
   Future<int?> init(String key) async {
     return _ddnManager.init(key);
   }
 
-  /// Normalize documents.
-  /// [file] - path to the file.
+  /// Normalizes the image.
+  ///
+  /// Parameters:
+  /// - [file]: path to the file.
+  /// - [points]: document points.
+  ///
+  /// Returns a [NormalizedImage] on success, or `null` if the image could not be normalized.
   @override
-  Future<NormalizedImage?> normalizeFile(String file, dynamic points) async {
-    return _ddnManager.normalizeFile(file, points);
+  Future<NormalizedImage?> normalizeFile(
+      String file, List<Offset> points, ColorMode color) async {
+    return _ddnManager.normalizeFile(file, points, color);
   }
 
-  /// Normalize documents.
-  /// [bytes] - image bytes.
-  /// [width] - image width.
-  /// [height] - image height.
-  /// [stride] - image stride.
-  /// [format] - image format.
-  /// [points] - document points.
+  /// Normalizes the image.
+  ///
+  /// Parameters:
+  /// - [bytes]: image bytes.
+  /// - [width]: image width.
+  /// - [height]: image height.
+  /// - [stride]: image stride.
+  /// - [format]: image format.
+  /// - [points]: document points.
+  /// - [rotation]: image rotation.
+  ///
+  /// Returns a [NormalizedImage] on success, or `null` if the image could not be normalized.
   @override
-  Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width,
-      int height, int stride, int format, dynamic points) async {
+  Future<NormalizedImage?> normalizeBuffer(
+      Uint8List bytes,
+      int width,
+      int height,
+      int stride,
+      int format,
+      List<Offset> points,
+      int rotation,
+      ColorMode color) async {
     return _ddnManager.normalizeBuffer(
-        bytes, width, height, stride, format, points);
+        bytes, width, height, stride, format, points, rotation, color);
   }
 
-  /// Document edge detection.
-  /// Returns a [List] of [DocumentResult].
+  /// Detects documents from the given image bytes.
+  ///
+  /// Parameters:
+  /// - [bytes]: image bytes.
+  /// - [width]: image width.
+  /// - [height]: image height.
+  /// - [stride]: image stride.
+  /// - [format]: image format.
+  /// - [rotation]: image rotation.
+  ///
+  /// Returns a [List] of [DocumentResult] on success, or `null` if the image could not be detected.
   @override
-  Future<List<DocumentResult>> detectBuffer(
-      Uint8List bytes, int width, int height, int stride, int format) async {
-    return _ddnManager.detectBuffer(bytes, width, height, stride, format);
+  Future<List<DocumentResult>> detectBuffer(Uint8List bytes, int width,
+      int height, int stride, int format, int rotation) async {
+    return _ddnManager.detectBuffer(
+        bytes, width, height, stride, format, rotation);
   }
 
-  /// Document edge detection.
-  /// Returns a [List] of [DocumentResult].
+  /// Detects documents in the given image file.
+  ///
+  /// Parameters:
+  /// - [file]: path to the file.
+  ///
+  /// Returns a [List] of [DocumentResult] on success, or `null` if the image could not be detected.
   @override
   Future<List<DocumentResult>?> detectFile(String file) async {
     return _ddnManager.detectFile(file);
   }
 
-  /// Save a document.
-  @override
-  Future<int?> save(String filename) async {
-    return _ddnManager.save(filename);
-  }
-
-  /// Set parameters.
-  /// Returns 0 if successful, -1 otherwise.
+  /// Sets parameters for the document scanner.
+  ///
+  /// Parameters:
+  /// - [params]: JSON string with the parameters.
+  ///
+  /// Returns `0` on success, or a non-zero error code if the parameters could not be set.
   @override
   Future<int?> setParameters(String params) async {
     return _ddnManager.setParameters(params);
   }
 
-  /// Get parameters.
-  /// @return a [String] containing the parameters.
+  /// Gets the current parameters as a JSON string
+  ///
+  /// Returns a JSON string with the current parameters.
   @override
   Future<String?> getParameters() async {
     return _ddnManager.getParameters();

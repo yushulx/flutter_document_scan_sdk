@@ -22,45 +22,40 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import android.util.Log;
 
-import com.dynamsoft.core.ImageData;
-import com.dynamsoft.core.CoreException;
-import com.dynamsoft.core.LicenseManager;
-import com.dynamsoft.core.LicenseVerificationListener;
-import com.dynamsoft.core.EnumImagePixelFormat;
-import com.dynamsoft.core.Quadrilateral;
-
-import com.dynamsoft.ddn.DocumentNormalizer;
-import com.dynamsoft.ddn.DetectedQuadResult;
-import com.dynamsoft.ddn.DocumentNormalizerException;
-import com.dynamsoft.ddn.NormalizedImageResult;
+import com.dynamsoft.cvr.EnumPresetTemplate;
+import com.dynamsoft.cvr.CapturedResult;
+import com.dynamsoft.cvr.CaptureVisionRouter;
+import com.dynamsoft.cvr.SimplifiedCaptureVisionSettings;
+import com.dynamsoft.cvr.CaptureVisionRouterException;
+import com.dynamsoft.license.LicenseManager;
+import com.dynamsoft.core.basic_structures.CapturedResultItem;
+import com.dynamsoft.core.basic_structures.ImageData;
+import com.dynamsoft.core.basic_structures.Quadrilateral;
+import com.dynamsoft.core.basic_structures.EnumImagePixelFormat;
+import com.dynamsoft.ddn.NormalizedImageResultItem;
+import com.dynamsoft.ddn.DetectedQuadResultItem;
+import com.dynamsoft.ddn.NormalizedImagesResult;
+import com.dynamsoft.ddn.DetectedQuadsResult;
+import com.dynamsoft.ddn.EnumImageColourMode;
 
 import android.graphics.Point;
 
 /** FlutterDocumentScanSdkPlugin */
 public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware {
-  /// The MethodChannel that will the communication between Flutter and native Android
-  ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
+  private static String TAG = "DCV";
   private MethodChannel channel;
   private HandlerThread mHandlerThread;
   private Handler mHandler;
   private final Executor mExecutor;
   private FlutterPluginBinding flutterPluginBinding;
   private Activity activity;
-  private DocumentNormalizer mNormalizer;
-  private NormalizedImageResult mNormalizedImage;
+  private CaptureVisionRouter mRouter;
 
   public FlutterDocumentScanSdkPlugin() {
     mHandler = new Handler(Looper.getMainLooper());
     mExecutor = Executors.newSingleThreadExecutor();
-
-    try {
-        mNormalizer = new DocumentNormalizer();
-    } catch (DocumentNormalizerException e) {
-        e.printStackTrace();
-    }
   }
 
   @Override
@@ -70,62 +65,68 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
     this.flutterPluginBinding = flutterPluginBinding;
   }
 
+  private void checkInstantce() {
+    if (mRouter == null) {
+            mRouter = new CaptureVisionRouter(activity);
+    }
+  }
+
   @Override
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
     switch (call.method) {
-      case "getPlatformVersion": {
-        result.success("Android " + android.os.Build.VERSION.RELEASE);
-        break;
-      }
       case "init": {
+        checkInstantce();
+
         final String license = call.argument("key");
         LicenseManager.initLicense(
             license, activity,
-                new LicenseVerificationListener() {
-                    @Override
-                    public void licenseVerificationCallback(boolean isSuccessful, CoreException e) {
-                        if (isSuccessful)
-                        {
-                            result.success(0);
-                        }
-                        else {
-                            result.success(-1);
-                        }
-                    }
-                });
+                (isSuccess, error) -> {
+            if (!isSuccess) {
+                result.success(-1);
+            }
+            else {
+                result.success(0);
+            }
+        });
         break;
       }
       case "setParameters": {
+        checkInstantce();
+
         final String params = call.argument("params");
         try {
-            mNormalizer.initRuntimeSettingsFromString(params);
+            mRouter.initSettings(params);
             result.success(0);
-        } catch (DocumentNormalizerException e) {
-          result.success(-1);
+        } catch (CaptureVisionRouterException e) {
+            result.success(-1);
         }
-        
         break;
       }
       case "getParameters": {
+        checkInstantce();
+
         String parameters = "";
-        if (mNormalizer != null) {
-            try {
-              parameters = mNormalizer.outputRuntimeSettings("");
-            } catch (Exception e) {
-              // TODO: handle exception
-            }
-        }
+        try {
+            parameters = mRouter.outputSettings("");
+          } catch (Exception e) {
+            result.success(e.toString());
+            return;
+          }
         result.success(parameters);
         break;
       }
       case "detectBuffer": {
+        checkInstantce();
+        
         List<Map<String, Object>> out = new ArrayList<>();
         final byte[] bytes = call.argument("bytes");
         final int width = call.argument("width");
         final int height = call.argument("height");
         final int stride = call.argument("stride");
         final int format = call.argument("format");
+        final int rotation = call.argument("rotation");
         final Result r = result;
+
         mExecutor.execute(new Runnable() {
           @Override
           public void run() {
@@ -135,14 +136,11 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
             imageData.height = height;
             imageData.stride = stride;
             imageData.format = format;
+            imageData.orientation = rotation;
 
             List<Map<String, Object>> tmp = new ArrayList<>();
-            try {
-                DetectedQuadResult[] detectedResults = mNormalizer.detectQuad(imageData);
-                tmp = WrapResults(detectedResults);
-            } catch (DocumentNormalizerException e) {
-                e.printStackTrace();
-            }
+            CapturedResult results = mRouter.capture(imageData, EnumPresetTemplate.PT_DETECT_DOCUMENT_BOUNDARIES);
+            tmp = createContourList(results);
             
             final List<Map<String, Object>> out = tmp;
             mHandler.post(new Runnable() {
@@ -156,6 +154,9 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
         break;
       }
       case "normalizeBuffer": {
+
+        checkInstantce();
+
         Map<String, Object> map = new HashMap<>();
 
         final byte[] bytes = call.argument("bytes");
@@ -171,6 +172,17 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
         final int y3 = call.argument("y3");
         final int x4 = call.argument("x4");
         final int y4 = call.argument("y4");
+        final int rotation = call.argument("rotation");
+        final int mode = call.argument("color");
+        
+        // int colorMode = EnumImageColourMode.ICM_GRAYSCALE;
+        // if (mode == 0) {
+        //   colorMode = EnumImageColourMode.ICM_COLOUR;
+        // } else if (mode == 1) {
+        //   colorMode = EnumImageColourMode.ICM_GRAYSCALE;
+        // } else if (mode == 2) {
+        //   colorMode = EnumImageColourMode.ICM_BINARY;
+        // }
 
         ImageData buffer = new ImageData();
         buffer.bytes = bytes;
@@ -178,6 +190,7 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
         buffer.height = height;
         buffer.stride = stride;
         buffer.format = format;
+        buffer.orientation = rotation;
 
         try {
           Quadrilateral quad = new Quadrilateral();
@@ -186,10 +199,17 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
           quad.points[1] = new Point(x2, y2);
           quad.points[2] = new Point(x3, y3);
           quad.points[3] = new Point(x4, y4);
-          mNormalizedImage = mNormalizer.normalize(buffer, quad);
 
-          map = createNormalizedImage();
-        } catch (DocumentNormalizerException e) {
+          SimplifiedCaptureVisionSettings settings = mRouter.getSimplifiedSettings(EnumPresetTemplate.PT_NORMALIZE_DOCUMENT);
+          settings.roi = quad;
+          settings.roiMeasuredInPercentage = false;
+          settings.documentSettings.colourMode = mode;
+          mRouter.updateSettings(EnumPresetTemplate.PT_NORMALIZE_DOCUMENT, settings);
+
+          CapturedResult data = mRouter.capture(buffer, EnumPresetTemplate.PT_NORMALIZE_DOCUMENT);
+
+          map = createNormalizedImage(data);
+        } catch (CaptureVisionRouterException e) {
             e.printStackTrace();
         }
 
@@ -197,18 +217,20 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
         break;
       }
       case "detectFile": {
+
+        checkInstantce();
+
         final String filename = call.argument("file");
         List<Map<String, Object>> out = new ArrayList<>();
-        try {
-            DetectedQuadResult[] detectedResults = mNormalizer.detectQuad(filename);
-            out = WrapResults(detectedResults);
-        } catch (DocumentNormalizerException e) {
-            e.printStackTrace();
-        }
+        CapturedResult results = mRouter.capture(filename, EnumPresetTemplate.PT_DETECT_DOCUMENT_BOUNDARIES);
+        out = createContourList(results);
         result.success(out);
         break;
       }
       case "normalizeFile": {
+
+        checkInstantce();
+
         final String filename = call.argument("file");
         final int x1 = call.argument("x1");
         final int y1 = call.argument("y1");
@@ -218,6 +240,7 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
         final int y3 = call.argument("y3");
         final int x4 = call.argument("x4");
         final int y4 = call.argument("y4");
+        final int mode = call.argument("color");
 
         Map<String, Object> map = new HashMap<>();
         try {
@@ -227,26 +250,21 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
           quad.points[1] = new Point(x2, y2);
           quad.points[2] = new Point(x3, y3);
           quad.points[3] = new Point(x4, y4);
-          mNormalizedImage = mNormalizer.normalize(filename, quad);
 
-          map = createNormalizedImage();
-        } catch (DocumentNormalizerException e) {
+          SimplifiedCaptureVisionSettings settings = mRouter.getSimplifiedSettings(EnumPresetTemplate.PT_NORMALIZE_DOCUMENT);
+          settings.roi = quad;
+          settings.roiMeasuredInPercentage = false;
+          settings.documentSettings.colourMode = mode;
+          mRouter.updateSettings(EnumPresetTemplate.PT_NORMALIZE_DOCUMENT, settings);
+
+          CapturedResult data = mRouter.capture(filename, EnumPresetTemplate.PT_NORMALIZE_DOCUMENT);
+
+          map = createNormalizedImage(data);
+        } catch (CaptureVisionRouterException e) {
             e.printStackTrace();
         }
 
         result.success(map);
-        break;
-      }
-      case "save": {
-        final String filename = call.argument("filename");
-        if (mNormalizedImage != null) {
-          try {
-            mNormalizedImage.saveToFile(filename);
-          } catch (Exception e) {
-            
-          }
-        }
-        result.success(0);
         break;
       }
       default:
@@ -254,15 +272,18 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
     }
   }
 
-  List<Map<String, Object>> WrapResults(DetectedQuadResult[] detectedResults) {
+  List<Map<String, Object>> createContourList(CapturedResult result) {
     List<Map<String, Object>> out = new ArrayList<>();
-    if (detectedResults != null && detectedResults.length > 0) {
-        for (int i = 0; i < detectedResults.length; i++) {
+    
+    if (result != null && result.getItems().length > 0) {
+        CapturedResultItem[] items = result.getItems();
+        for (CapturedResultItem item : items) {
+          if (item instanceof DetectedQuadResultItem) {
             Map<String, Object> map = new HashMap<>();
 
-            DetectedQuadResult detectedResult = detectedResults[i];
-            int confidence = detectedResult.confidenceAsDocumentBoundary;
-            Point[] points = detectedResult.location.points;
+            DetectedQuadResultItem quadItem = (DetectedQuadResultItem) item;
+            int confidence = quadItem.getConfidenceAsDocumentBoundary();
+            Point[] points = quadItem.getLocation().points;
             int x1 = points[0].x;
             int y1 = points[0].y;
             int x2 = points[1].x;
@@ -283,16 +304,20 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
             map.put("y4", y4);
             
             out.add(map);
+          }
         }
     }
     return out;
   }
 
-  Map<String, Object> createNormalizedImage() {
+  Map<String, Object> createNormalizedImage(CapturedResult result) {
+    NormalizedImagesResult normalizedImageResult = result.getNormalizedImagesResult();
     Map<String, Object> map = new HashMap<>();
 
-    if (mNormalizedImage != null) {
-      ImageData imageData = mNormalizedImage.image;
+    if (normalizedImageResult.getItems().length > 0) {
+      NormalizedImageResultItem item = normalizedImageResult.getItems()[0];
+      ImageData imageData = item.getImageData();
+
       int width = imageData.width;
       int height = imageData.height;
       int stride = imageData.stride;
@@ -326,7 +351,7 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
             }
         }
       }
-      else if (format == EnumImagePixelFormat.IPF_GRAYSCALED) {
+      else if (format == EnumImagePixelFormat.IPF_GRAYSCALED | format == EnumImagePixelFormat.IPF_BINARY_8_INVERTED | format == EnumImagePixelFormat.IPF_BINARY_8) {
         int dataIndex = 0;
         for (int i = 0; i < height; i++)
         {
@@ -362,6 +387,7 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
 
       map.put("data", rgba);
     }
+    
 
     return map;
   }

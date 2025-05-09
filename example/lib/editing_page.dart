@@ -118,17 +118,6 @@ class _EditingPageState extends State<EditingPage> {
               Positioned.fill(
                 child: createCustomImage(),
               ),
-              const Positioned(
-                left: 122,
-                right: 122,
-                bottom: 28,
-                child: Text('Powered by Dynamsoft',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white,
-                    )),
-              ),
             ],
           ),
         ));

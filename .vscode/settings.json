@@ -72,7 +72,11 @@
         "xutility": "cpp",
         "condition_variable": "cpp",
         "deque": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "array": "cpp",
+        "coroutine": "cpp",
+        "typeindex": "cpp",
+        "codecvt": "cpp"
     },
     "java.configuration.updateBuildConfiguration": "automatic",
     "editor.formatOnSave": true

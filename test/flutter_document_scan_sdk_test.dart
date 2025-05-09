@@ -6,24 +6,14 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 class MockFlutterDocumentScanSdkPlatform
     with MockPlatformInterfaceMixin
-    implements FlutterDocumentScanSdkPlatform {
-
-  @override
-  Future<String?> getPlatformVersion() => Future.value('42');
-}
+    implements FlutterDocumentScanSdkPlatform {}
 
 void main() {
-  final FlutterDocumentScanSdkPlatform initialPlatform = FlutterDocumentScanSdkPlatform.instance;
+  final FlutterDocumentScanSdkPlatform initialPlatform =
+      FlutterDocumentScanSdkPlatform.instance;
 
   test('$MethodChannelFlutterDocumentScanSdk is the default instance', () {
-    expect(initialPlatform, isInstanceOf<MethodChannelFlutterDocumentScanSdk>());
-  });
-
-  test('getPlatformVersion', () async {
-    FlutterDocumentScanSdk flutterDocumentScanSdkPlugin = FlutterDocumentScanSdk();
-    MockFlutterDocumentScanSdkPlatform fakePlatform = MockFlutterDocumentScanSdkPlatform();
-    FlutterDocumentScanSdkPlatform.instance = fakePlatform;
-
-    expect(await flutterDocumentScanSdkPlugin.getPlatformVersion(), '42');
+    expect(
+        initialPlatform, isInstanceOf<MethodChannelFlutterDocumentScanSdk>());
   });
 }

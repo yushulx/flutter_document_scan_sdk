@@ -12,35 +12,40 @@ class MethodChannelFlutterDocumentScanSdk
   @visibleForTesting
   final methodChannel = const MethodChannel('flutter_document_scan_sdk');
 
-  @override
-  Future<String?> getPlatformVersion() async {
-    final version =
-        await methodChannel.invokeMethod<String>('getPlatformVersion');
-    return version;
-  }
-
-  /// Initialize the SDK
+  /// Initializes the SDK using the provided [key].
+  ///
+  /// Returns `0` on success, or a non-zero error code if initialization fails.
   @override
   Future<int?> init(String key) async {
     return await methodChannel.invokeMethod<int>('init', {'key': key});
   }
 
-  /// Set parameters for the document scanner
+  /// Sets parameters for the document scanner.
+  ///
+  /// Parameters:
+  /// - [params]: JSON string with the parameters.
+  ///
+  /// Returns `0` on success, or a non-zero error code if the parameters could not be set.
   @override
   Future<int?> setParameters(String params) async {
     return await methodChannel
         .invokeMethod<int>('setParameters', {'params': params});
   }
 
-  /// Get the current parameters as a JSON string
+  /// Gets the current parameters as a JSON string
+  ///
+  /// Returns a JSON string with the current parameters.
   @override
   Future<String?> getParameters() async {
     return await methodChannel.invokeMethod<String>('getParameters');
   }
 
-  /// Document edge detection.
-  /// [file] - path to the file.
-  /// Returns a [List] of [DocumentResult].
+  /// Detects documents in the given image file.
+  ///
+  /// Parameters:
+  /// - [file]: path to the file.
+  ///
+  /// Returns a [List] of [DocumentResult] on success, or `null` if the image could not be detected.
   @override
   Future<List<DocumentResult>> detectFile(String file) async {
     List? results = await methodChannel.invokeListMethod<dynamic>(
@@ -51,16 +56,20 @@ class MethodChannelFlutterDocumentScanSdk
     return _resultWrapper(results);
   }
 
-  /// Document edge detection.
-  /// [bytes] - bytes of the image.
-  /// [width] - width of the image.
-  /// [height] - height of the image.
-  /// [stride] - stride of the image.
-  /// [format] - format of the image.
-  /// Returns a [List] of [DocumentResult].
+  /// Detects documents from the given image bytes.
+  ///
+  /// Parameters:
+  /// - [bytes]: image bytes.
+  /// - [width]: image width.
+  /// - [height]: image height.
+  /// - [stride]: image stride.
+  /// - [format]: image format.
+  /// - [rotation]: image rotation.
+  ///
+  /// Returns a [List] of [DocumentResult] on success, or `null` if the image could not be detected.
   @override
-  Future<List<DocumentResult>> detectBuffer(
-      Uint8List bytes, int width, int height, int stride, int format) async {
+  Future<List<DocumentResult>> detectBuffer(Uint8List bytes, int width,
+      int height, int stride, int format, int rotation) async {
     List? results = await methodChannel.invokeListMethod<dynamic>(
       'detectBuffer',
       {
@@ -68,7 +77,8 @@ class MethodChannelFlutterDocumentScanSdk
         'width': width,
         'height': height,
         'stride': stride,
-        'format': format
+        'format': format,
+        'rotation': rotation
       },
     );
 
@@ -95,7 +105,7 @@ class MethodChannelFlutterDocumentScanSdk
         offsets.add(Offset(x2.toDouble(), y2.toDouble()));
         offsets.add(Offset(x3.toDouble(), y3.toDouble()));
         offsets.add(Offset(x4.toDouble(), y4.toDouble()));
-        DocumentResult documentResult = DocumentResult(confidence, offsets, []);
+        DocumentResult documentResult = DocumentResult(confidence, offsets);
         output.add(documentResult);
       }
     }
@@ -103,11 +113,17 @@ class MethodChannelFlutterDocumentScanSdk
     return output;
   }
 
-  /// Normalize documents.
-  /// [file] - path to the file.
-  /// [points] - points of the document.
+  /// Normalizes the image.
+  ///
+  /// Parameters:
+  /// - [file]: path to the file.
+  /// - [points]: document points.
+  /// - [color]: color mode.
+  ///
+  /// Returns a [NormalizedImage] on success, or `null` if the image could not be normalized.
   @override
-  Future<NormalizedImage?> normalizeFile(String file, dynamic points) async {
+  Future<NormalizedImage?> normalizeFile(
+      String file, List<Offset> points, ColorMode color) async {
     Offset offset = points[0];
     int x1 = offset.dx.toInt();
     int y1 = offset.dy.toInt();
@@ -134,7 +150,8 @@ class MethodChannelFlutterDocumentScanSdk
         'x3': x3,
         'y3': y3,
         'x4': x4,
-        'y4': y4
+        'y4': y4,
+        'color': color.index,
       },
     );
 
@@ -159,16 +176,29 @@ class MethodChannelFlutterDocumentScanSdk
     return null;
   }
 
-  /// Normalize documents.
-  /// [bytes] - bytes of the image.
-  /// [width] - width of the image.
-  /// [height] - height of the image.
-  /// [stride] - stride of the image.
-  /// [format] - format of the image.
-  /// [points] - points of the document.
+  /// Normalizes the image.
+  ///
+  /// Parameters:
+  /// - [bytes]: image bytes.
+  /// - [width]: image width.
+  /// - [height]: image height.
+  /// - [stride]: image stride.
+  /// - [format]: image format.
+  /// - [points]: document points.
+  /// - [rotation]: image rotation.
+  /// - [color]: color mode.
+  ///
+  /// Returns a [NormalizedImage] on success, or `null` if the image could not be normalized.
   @override
-  Future<NormalizedImage?> normalizeBuffer(Uint8List bytes, int width,
-      int height, int stride, int format, dynamic points) async {
+  Future<NormalizedImage?> normalizeBuffer(
+      Uint8List bytes,
+      int width,
+      int height,
+      int stride,
+      int format,
+      List<Offset> points,
+      int rotation,
+      ColorMode color) async {
     Offset offset = points[0];
     int x1 = offset.dx.toInt();
     int y1 = offset.dy.toInt();
@@ -199,7 +229,9 @@ class MethodChannelFlutterDocumentScanSdk
         'x3': x3,
         'y3': y3,
         'x4': x4,
-        'y4': y4
+        'y4': y4,
+        'rotation': rotation,
+        'color': color.index,
       },
     );
 
@@ -222,12 +254,5 @@ class MethodChannelFlutterDocumentScanSdk
     }
 
     return null;
-  }
-
-  /// Save a document.
-  @override
-  Future<int?> save(String filename) async {
-    return await methodChannel
-        .invokeMethod<int>('save', {'filename': filename});
   }
 }

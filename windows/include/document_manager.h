@@ -1,44 +1,139 @@
 #ifndef DOCUMENT_MANAGER_H_
 #define DOCUMENT_MANAGER_H_
 
-#include "DynamsoftCore.h"
-#include "DynamsoftDocumentNormalizer.h"
+#include "DynamsoftCaptureVisionRouter.h"
+#include "DynamsoftUtility.h"
 
 #include <vector>
 #include <iostream>
 #include <map>
+#include <mutex>
 
 #include <flutter/standard_method_codec.h>
 
-#include <thread>
-#include <condition_variable>
-#include <mutex>
-#include <queue>
-#include <functional>
-
 using namespace std;
 using namespace dynamsoft::ddn;
-using namespace dynamsoft::core;
+using namespace dynamsoft::license;
+using namespace dynamsoft::cvr;
+using namespace dynamsoft::utility;
+using namespace dynamsoft::basic_structures;
 
 using flutter::EncodableList;
 using flutter::EncodableMap;
 using flutter::EncodableValue;
 
-class Task
+// Define as inline to avoid multiple definition errors
+inline void printf_to_cerr(const char *format, ...)
+{
+    char buffer[1024];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+    std::cerr << buffer;
+}
+
+// Define printf to use our custom function
+#define printf printf_to_cerr
+
+class MyCapturedResultReceiver : public CCapturedResultReceiver
 {
 public:
-    std::function<void()> func;
-    unsigned char *buffer;
+    vector<CCapturedResult *> results;
+    mutex results_mutex;
+
+public:
+    void OnCapturedResultReceived(CCapturedResult *pResult) override
+    {
+        pResult->Retain();
+        std::lock_guard<std::mutex> lock(results_mutex);
+        results.push_back(pResult);
+    }
 };
 
-class WorkerThread
+class MyImageSourceStateListener : public CImageSourceStateListener
 {
+private:
+    CCaptureVisionRouter *m_router;
+    MyCapturedResultReceiver *m_receiver;
+
 public:
-    std::mutex m;
-    std::condition_variable cv;
-    std::queue<Task> tasks = {};
-    volatile bool running;
-    std::thread t;
+    vector<std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>> pendingResults = {};
+
+    MyImageSourceStateListener(CCaptureVisionRouter *router, MyCapturedResultReceiver *receiver)
+    {
+        m_router = router;
+        m_receiver = receiver;
+    }
+
+    void OnImageSourceStateReceived(ImageSourceState state)
+    {
+        if (state == ISS_EXHAUSTED)
+        {
+            m_router->StopCapturing();
+            std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> sender = std::move(pendingResults.front());
+            pendingResults.erase(pendingResults.begin());
+            EncodableValue out;
+
+            for (auto *result : m_receiver->results)
+            {
+                CProcessedDocumentResult *pResults = result->GetProcessedDocumentResult();
+                if (pResults)
+                {
+                    int contourCount = pResults->GetDetectedQuadResultItemsCount();
+
+                    if (contourCount > 0)
+                    {
+                        out = CreateContourList(result);
+                    }
+                    pResults->Release();
+                }
+
+                result->Release();
+            }
+
+            m_receiver->results.clear();
+            sender->Success(out);
+        }
+    }
+
+    EncodableValue CreateContourList(CCapturedResult *capturedResult)
+    {
+        EncodableList contours;
+
+        CProcessedDocumentResult *pResults = capturedResult->GetProcessedDocumentResult();
+
+        int count = pResults->GetDetectedQuadResultItemsCount();
+
+        for (int i = 0; i < count; i++)
+        {
+            EncodableMap out;
+
+            const CDetectedQuadResultItem *quadResult = pResults->GetDetectedQuadResultItem(i);
+            int confidence = quadResult->GetConfidenceAsDocumentBoundary();
+            CPoint *points = quadResult->GetLocation().points;
+            int x1 = points[0][0];
+            int y1 = points[0][1];
+            int x2 = points[1][0];
+            int y2 = points[1][1];
+            int x3 = points[2][0];
+            int y3 = points[2][1];
+            int x4 = points[3][0];
+            int y4 = points[3][1];
+
+            out[EncodableValue("confidence")] = EncodableValue(confidence);
+            out[EncodableValue("x1")] = EncodableValue(x1);
+            out[EncodableValue("y1")] = EncodableValue(y1);
+            out[EncodableValue("x2")] = EncodableValue(x2);
+            out[EncodableValue("y2")] = EncodableValue(y2);
+            out[EncodableValue("x3")] = EncodableValue(x3);
+            out[EncodableValue("y3")] = EncodableValue(y3);
+            out[EncodableValue("x4")] = EncodableValue(x4);
+            out[EncodableValue("y4")] = EncodableValue(y4);
+            contours.push_back(out);
+        }
+        return contours;
+    }
 };
 
 class DocumentManager
@@ -46,112 +141,50 @@ class DocumentManager
 public:
     ~DocumentManager()
     {
-        clear();
-        if (normalizer != NULL)
+        if (cvr != NULL)
         {
-            DDN_DestroyInstance(normalizer);
-            normalizer = NULL;
+            delete cvr;
+            cvr = NULL;
         }
 
-        FreeImage();
+        if (listener)
+        {
+            delete listener;
+            listener = NULL;
+        }
+
+        if (fileFetcher)
+        {
+            delete fileFetcher;
+            fileFetcher = NULL;
+        }
+
+        if (capturedReceiver)
+        {
+            delete capturedReceiver;
+            capturedReceiver = NULL;
+        }
+
+        if (processor)
+        {
+            delete processor;
+            processor = NULL;
+        }
     };
-
-    void clearTasks()
-    {
-        if (worker->tasks.size() > 0)
-        {
-            for (int i = 0; i < worker->tasks.size(); i++)
-            {
-                free(worker->tasks.front().buffer);
-                worker->tasks.pop();
-            }
-        }
-    }
-
-    void clear()
-    {
-        if (worker)
-        {
-            std::unique_lock<std::mutex> lk(worker->m);
-            worker->running = false;
-
-            clearTasks();
-
-            worker->cv.notify_one();
-            lk.unlock();
-
-            worker->t.join();
-            delete worker;
-            worker = NULL;
-            printf("Quit native thread.\n");
-        }
-    }
-
-    const char *GetVersion()
-    {
-        return DDN_GetVersion();
-    }
-
-    void Init()
-    {
-        normalizer = DDN_CreateInstance();
-        imageResult = NULL;
-        worker = new WorkerThread();
-        worker->running = true;
-        worker->t = thread(&run, this);
-    }
 
     int SetParameters(const char *params)
     {
-        int ret = 0;
+        if (!cvr)
+            return -1;
 
-        if (normalizer)
+        char errorMsgBuffer[512];
+        int ret = cvr->InitSettings(params, errorMsgBuffer, 512);
+        if (ret != 0)
         {
-            char errorMsgBuffer[512];
-            ret = DDN_InitRuntimeSettingsFromString(normalizer, params, errorMsgBuffer, 512);
-            if (ret != DM_OK)
-            {
-                cout << errorMsgBuffer << endl;
-            }
+            printf("SetParameters: %s\n", errorMsgBuffer);
         }
 
         return ret;
-    }
-
-    static void run(DocumentManager *self)
-    {
-        while (self->worker->running)
-        {
-            std::function<void()> task;
-            std::unique_lock<std::mutex> lk(self->worker->m);
-            self->worker->cv.wait(lk, [&]
-                                  { return !self->worker->tasks.empty() || !self->worker->running; });
-            if (!self->worker->running)
-            {
-                break;
-            }
-            task = std::move(self->worker->tasks.front().func);
-            self->worker->tasks.pop();
-            lk.unlock();
-
-            task();
-        }
-    }
-
-    void queueTask(unsigned char *imageBuffer, int width, int height, int stride, int format, int len)
-    {
-        unsigned char *data = (unsigned char *)malloc(len);
-        memcpy(data, imageBuffer, len);
-
-        std::unique_lock<std::mutex> lk(worker->m);
-        clearTasks();
-        std::function<void()> task_function = std::bind(processBuffer, this, data, width, height, stride, format);
-        Task task;
-        task.func = task_function;
-        task.buffer = data;
-        worker->tasks.push(task);
-        worker->cv.notify_one();
-        lk.unlock();
     }
 
     ImagePixelFormat getPixelFormat(int format)
@@ -203,119 +236,114 @@ public:
         return pixelFormat;
     }
 
-    static void processBuffer(DocumentManager *self, unsigned char *buffer, int width, int height, int stride, int format)
+    int SetLicense(const char *license)
     {
-        ImageData data;
-        data.bytes = buffer;
-        data.width = width;
-        data.height = height;
-        data.stride = stride;
-        data.format = self->getPixelFormat(format);
-        data.bytesLength = stride * height;
-        data.orientation = 0;
+        // Click https://www.dynamsoft.com/customer/license/trialLicense/?product=dcv&package=cross-platform to get a trial license.
+        char errorMsgBuffer[512];
+        int ret = CLicenseManager::InitLicense(license, errorMsgBuffer, 512);
+        printf("InitLicense: %s\n", errorMsgBuffer);
 
-        DetectedQuadResultArray *pResults = NULL;
-        int ret = DDN_DetectQuadFromBuffer(self->normalizer, &data, "", &pResults);
+        if (ret)
+            return ret;
+
+        cvr = new CCaptureVisionRouter;
+
+        fileFetcher = new CFileFetcher();
+        ret = cvr->SetInput(fileFetcher);
         if (ret)
         {
-            printf("Detection error: %s\n", DC_GetErrorString(ret));
+            printf("SetInput error: %d\n", ret);
         }
 
-        free(buffer);
-        EncodableList results = self->WrapResults(pResults);
-        std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result = std::move(self->pendingResults.front());
-        self->pendingResults.erase(self->pendingResults.begin());
-        result->Success(results);
-    }
-
-    static int SetLicense(const char *license)
-    {
-        char errorMsgBuffer[512];
-        // Click https://www.dynamsoft.com/customer/license/trialLicense/?product=dcv&package=cross-platform to get a trial license.
-        int ret = DC_InitLicense(license, errorMsgBuffer, 512);
-        if (ret != DM_OK)
+        capturedReceiver = new MyCapturedResultReceiver;
+        ret = cvr->AddResultReceiver(capturedReceiver);
+        if (ret)
         {
-            cout << errorMsgBuffer << endl;
+            printf("AddResultReceiver error: %d\n", ret);
         }
+
+        listener = new MyImageSourceStateListener(cvr, capturedReceiver);
+        ret = cvr->AddImageSourceStateListener(listener);
+        if (ret)
+        {
+            printf("AddImageSourceStateListener error: %d\n", ret);
+        }
+
+        processor = new CImageProcessor();
+
         return ret;
     }
 
-    EncodableList WrapResults(DetectedQuadResultArray *pResults)
+    void start(const char *templateName)
     {
-        EncodableList out;
-        if (normalizer == NULL)
-            return out;
+        if (!cvr)
+            return;
 
-        if (pResults)
+        char errorMsg[512] = {0};
+        int errorCode = cvr->StartCapturing(templateName, false, errorMsg, 512);
+        if (errorCode != 0)
         {
-            int count = pResults->resultsCount;
+            printf("StartCapturing: %s\n", errorMsg);
+        }
+    }
 
-            for (int i = 0; i < count; i++)
+    void binary2grayscale(const unsigned char *data, unsigned char *output, int width, int height, int stride, int length)
+    {
+        int index = 0;
+
+        int skip = stride * 8 - width;
+        int shift = 0;
+        int n = 1;
+
+        for (int i = 0; i < length; ++i)
+        {
+            unsigned char b = data[i];
+            int byteCount = 7;
+            while (byteCount >= 0)
             {
-                EncodableMap map;
+                int tmp = (b & (1 << byteCount)) >> byteCount;
 
-                DetectedQuadResult *quadResult = pResults->detectedQuadResults[i];
-                int confidence = quadResult->confidenceAsDocumentBoundary;
-                DM_Point *points = quadResult->location->points;
-                int x1 = points[0].coordinate[0];
-                int y1 = points[0].coordinate[1];
-                int x2 = points[1].coordinate[0];
-                int y2 = points[1].coordinate[1];
-                int x3 = points[2].coordinate[0];
-                int y3 = points[2].coordinate[1];
-                int x4 = points[3].coordinate[0];
-                int y4 = points[3].coordinate[1];
+                if (shift < stride * 8 * n - skip)
+                {
+                    if (tmp == 1)
+                        output[index] = 255;
+                    else
+                        output[index] = 0;
+                    index += 1;
+                }
 
-                map[EncodableValue("confidence")] = EncodableValue(confidence);
-                map[EncodableValue("x1")] = EncodableValue(x1);
-                map[EncodableValue("y1")] = EncodableValue(y1);
-                map[EncodableValue("x2")] = EncodableValue(x2);
-                map[EncodableValue("y2")] = EncodableValue(y2);
-                map[EncodableValue("x3")] = EncodableValue(x3);
-                map[EncodableValue("y3")] = EncodableValue(y3);
-                map[EncodableValue("x4")] = EncodableValue(x4);
-                map[EncodableValue("y4")] = EncodableValue(y4);
-                out.push_back(map);
+                byteCount -= 1;
+                shift += 1;
+            }
+
+            if (shift == stride * 8 * n)
+            {
+                n += 1;
             }
         }
-
-        if (pResults != NULL)
-            DDN_FreeDetectedQuadResultArray(&pResults);
-
-        return out;
     }
 
-    EncodableList DetectFile(const char *filename)
-    {
-        EncodableList out;
-        if (normalizer == NULL)
-            return out;
-
-        DetectedQuadResultArray *pResults = NULL;
-
-        int ret = DDN_DetectQuadFromFile(normalizer, filename, "", &pResults);
-        if (ret)
-        {
-            printf("Detection error: %s\n", DC_GetErrorString(ret));
-        }
-
-        return WrapResults(pResults);
-    }
-
-    EncodableMap createNormalizedImage()
+    EncodableMap createNormalizedImage(CCapturedResult *capturedResult)
     {
         EncodableMap map;
 
-        if (imageResult)
+        CProcessedDocumentResult *pResults = capturedResult->GetProcessedDocumentResult();
+
+        int count = pResults->GetEnhancedImageResultItemsCount();
+
+        if (count > 0)
         {
-            ImageData *imageData = imageResult->image;
-            int width = imageData->width;
-            int height = imageData->height;
-            int stride = imageData->stride;
-            int format = (int)imageData->format;
-            unsigned char *data = imageData->bytes;
-            int orientation = imageData->orientation;
-            int length = imageData->bytesLength;
+            const CEnhancedImageResultItem *imageResult = pResults->GetEnhancedImageResultItem(0);
+            const CImageData *imageData = imageResult->GetImageData();
+            // CImageData *gray = processor->ConvertToGray(normalizedImage);
+            // CImageData *imageData = processor->ConvertToBinaryGlobal(gray, -1, true);
+            int width = imageData->GetWidth();
+            int height = imageData->GetHeight();
+            int stride = imageData->GetStride();
+            int format = (int)imageData->GetImagePixelFormat();
+            const unsigned char *data = imageData->GetBytes();
+            int orientation = imageData->GetOrientation();
+            int length = (int)imageData->GetBytesLength();
 
             map[EncodableValue("width")] = EncodableValue(width);
             map[EncodableValue("height")] = EncodableValue(height);
@@ -326,6 +354,7 @@ public:
 
             unsigned char *rgba = new unsigned char[width * height * 4];
             memset(rgba, 0, width * height * 4);
+
             if (format == IPF_RGB_888)
             {
                 int dataIndex = 0;
@@ -343,7 +372,7 @@ public:
                     }
                 }
             }
-            else if (format == IPF_GRAYSCALED)
+            else if (format == IPF_GRAYSCALED || format == IPF_BINARY_8_INVERTED || format == IPF_BINARY_8)
             {
                 int dataIndex = 0;
                 for (int i = 0; i < height; i++)
@@ -390,137 +419,129 @@ public:
         return map;
     }
 
-    EncodableMap NormalizeFile(const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    void DetectFile(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const char *filename)
     {
-        FreeImage();
-
-        Quadrilateral quad;
-        quad.points[0].coordinate[0] = x1;
-        quad.points[0].coordinate[1] = y1;
-        quad.points[1].coordinate[0] = x2;
-        quad.points[1].coordinate[1] = y2;
-        quad.points[2].coordinate[0] = x3;
-        quad.points[2].coordinate[1] = y3;
-        quad.points[3].coordinate[0] = x4;
-        quad.points[3].coordinate[1] = y4;
-
-        int errorCode = DDN_NormalizeFile(normalizer, filename, "", &quad, &imageResult);
-        if (errorCode != DM_OK)
-            printf("%s\r\n", DC_GetErrorString(errorCode));
-
-        return createNormalizedImage();
-    }
-
-    EncodableMap NormalizeBuffer(const unsigned char *buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
-    {
-        FreeImage();
-
-        ImageData data;
-        data.bytes = (unsigned char *)buffer;
-        data.width = width;
-        data.height = height;
-        data.stride = stride;
-        data.format = getPixelFormat(format);
-        data.bytesLength = stride * height;
-        data.orientation = 0;
-
-        Quadrilateral quad;
-        quad.points[0].coordinate[0] = x1;
-        quad.points[0].coordinate[1] = y1;
-        quad.points[1].coordinate[0] = x2;
-        quad.points[1].coordinate[1] = y2;
-        quad.points[2].coordinate[0] = x3;
-        quad.points[2].coordinate[1] = y3;
-        quad.points[3].coordinate[0] = x4;
-        quad.points[3].coordinate[1] = y4;
-
-        int errorCode = DDN_NormalizeBuffer(normalizer, &data, "", &quad, &imageResult);
-        if (errorCode != DM_OK)
-            printf("%s\r\n", DC_GetErrorString(errorCode));
-
-        return createNormalizedImage();
-    }
-
-    void binary2grayscale(unsigned char *data, unsigned char *output, int width, int height, int stride, int length)
-    {
-        int index = 0;
-
-        int skip = stride * 8 - width;
-        int shift = 0;
-        int n = 1;
-
-        for (int i = 0; i < length; ++i)
+        if (!cvr)
         {
-            unsigned char b = data[i];
-            int byteCount = 7;
-            while (byteCount >= 0)
-            {
-                int tmp = (b & (1 << byteCount)) >> byteCount;
-
-                if (shift < stride * 8 * n - skip)
-                {
-                    if (tmp == 1)
-                        output[index] = 255;
-                    else
-                        output[index] = 0;
-                    index += 1;
-                }
-
-                byteCount -= 1;
-                shift += 1;
-            }
-
-            if (shift == stride * 8 * n)
-            {
-                n += 1;
-            }
+            EncodableList out;
+            pendingResult->Success(out);
+            return;
         }
+
+        listener->pendingResults.push_back(std::move(pendingResult));
+        fileFetcher->SetFile(filename);
+        start(CPresetTemplate::PT_DETECT_DOCUMENT_BOUNDARIES);
+    }
+
+    void DetectBuffer(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const unsigned char *buffer, int width, int height, int stride, int format, int rotation)
+    {
+        if (!cvr)
+        {
+            EncodableList out;
+            pendingResult->Success(out);
+            return;
+        }
+
+        listener->pendingResults.push_back(std::move(pendingResult));
+        CImageData *imageData = new CImageData(stride * height, buffer, width, height, stride, getPixelFormat(format), rotation);
+        fileFetcher->SetFile(imageData);
+        delete imageData;
+
+        start(CPresetTemplate::PT_DETECT_DOCUMENT_BOUNDARIES);
+    }
+
+    void NormalizeFile(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const char *filename, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int color)
+    {
+        EncodableMap out;
+
+        if (!cvr)
+        {
+            pendingResult->Success(out);
+            return;
+        }
+
+        SimplifiedCaptureVisionSettings settings = {};
+        cvr->GetSimplifiedSettings(CPresetTemplate::PT_NORMALIZE_DOCUMENT, &settings);
+        CQuadrilateral quad;
+        quad.points[0][0] = x1;
+        quad.points[0][1] = y1;
+        quad.points[1][0] = x2;
+        quad.points[1][1] = y2;
+        quad.points[2][0] = x3;
+        quad.points[2][1] = y3;
+        quad.points[3][0] = x4;
+        quad.points[3][1] = y4;
+        settings.roi = quad;
+        settings.roiMeasuredInPercentage = 0;
+        settings.documentSettings.colourMode = (ImageColourMode)color;
+
+        char errorMsgBuffer[512];
+        int ret = cvr->UpdateSettings(CPresetTemplate::PT_NORMALIZE_DOCUMENT, &settings, errorMsgBuffer, 512);
+        if (ret)
+        {
+            printf("Error: %s\n", errorMsgBuffer);
+        }
+
+        CCapturedResult *capturedResult = cvr->Capture(filename, CPresetTemplate::PT_NORMALIZE_DOCUMENT);
+        out = createNormalizedImage(capturedResult);
+        pendingResult->Success(out);
+    }
+
+    void NormalizeBuffer(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const unsigned char *buffer, int width, int height, int stride, int format, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int rotation, int color)
+    {
+        EncodableMap out;
+        if (!cvr)
+        {
+            pendingResult->Success(out);
+            return;
+        }
+
+        SimplifiedCaptureVisionSettings settings = {};
+        cvr->GetSimplifiedSettings(CPresetTemplate::PT_NORMALIZE_DOCUMENT, &settings);
+        CQuadrilateral quad;
+        quad.points[0][0] = x1;
+        quad.points[0][1] = y1;
+        quad.points[1][0] = x2;
+        quad.points[1][1] = y2;
+        quad.points[2][0] = x3;
+        quad.points[2][1] = y3;
+        quad.points[3][0] = x4;
+        quad.points[3][1] = y4;
+        settings.roi = quad;
+        settings.roiMeasuredInPercentage = 0;
+        settings.documentSettings.colourMode = (ImageColourMode)color;
+
+        char errorMsgBuffer[512];
+        int ret = cvr->UpdateSettings(CPresetTemplate::PT_NORMALIZE_DOCUMENT, &settings, errorMsgBuffer, 512);
+        if (ret)
+        {
+            printf("Error: %s\n", errorMsgBuffer);
+        }
+
+        CImageData *imageData = new CImageData(stride * height, buffer, width, height, stride, getPixelFormat(format), rotation);
+        CCapturedResult *capturedResult = cvr->Capture(imageData, CPresetTemplate::PT_NORMALIZE_DOCUMENT);
+        delete imageData;
+
+        out = createNormalizedImage(capturedResult);
+        pendingResult->Success(out);
     }
 
     EncodableValue GetParameters()
     {
-        if (normalizer == NULL)
+        if (cvr == NULL)
             return EncodableValue("");
 
-        char *content = NULL;
-        DDN_OutputRuntimeSettingsToString(normalizer, "", &content);
+        char *content = cvr->OutputSettings("*");
         EncodableValue params = EncodableValue((const char *)content);
-        if (content != NULL)
-            DDN_FreeString(&content);
         return params;
     }
 
-    int Save(const char *filename)
-    {
-        if (imageResult == NULL)
-            return -1;
-        int ret = NormalizedImageResult_SaveToFile(imageResult, filename);
-        if (ret != DM_OK)
-            printf("NormalizedImageResult_SaveToFile: %s\r\n", DC_GetErrorString(ret));
-
-        return ret;
-    }
-
-    void DetectBuffer(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> &pendingResult, const unsigned char *buffer, int width, int height, int stride, int format)
-    {
-        pendingResults.push_back(std::move(pendingResult));
-        queueTask((unsigned char *)buffer, width, height, stride, format, stride * height);
-    }
-
 private:
-    void *normalizer;
-    NormalizedImageResult *imageResult;
-    WorkerThread *worker;
-    vector<std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>> pendingResults = {};
-
-    void FreeImage()
-    {
-        if (imageResult != NULL)
-        {
-            DDN_FreeNormalizedImageResult(&imageResult);
-            imageResult = NULL;
-        }
-    }
+    MyCapturedResultReceiver *capturedReceiver;
+    MyImageSourceStateListener *listener;
+    CFileFetcher *fileFetcher;
+    CCaptureVisionRouter *cvr;
+    CImageProcessor *processor;
 };
 
 #endif

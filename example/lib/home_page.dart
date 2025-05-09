@@ -7,7 +7,6 @@ import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk_platform_int
 import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'editing_page.dart';
-import 'utils.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'dart:ui' as ui;
@@ -65,7 +64,8 @@ class _HomePageState extends State<HomePage> {
           image.width,
           image.height,
           byteData.lengthInBytes ~/ image.height,
-          ImagePixelFormat.IPF_ARGB_8888.index);
+          ImagePixelFormat.IPF_ARGB_8888.index,
+          ImageRotation.rotation0.value);
 
       if (results != null && results.isNotEmpty) {
         openResultPage(
@@ -86,7 +86,7 @@ class _HomePageState extends State<HomePage> {
         openResultPage(
             DocumentData(
               image: image,
-              documentResults: <DocumentResult>[DocumentResult(0, points, 0)],
+              documentResults: <DocumentResult>[DocumentResult(0, points)],
             ),
             false);
       }
@@ -123,12 +123,6 @@ class _HomePageState extends State<HomePage> {
           children: [
             GestureDetector(
                 onTap: () {
-                  if (!kIsWeb && Platform.isLinux) {
-                    showAlert(context, "Warning",
-                        "${Platform.operatingSystem} is not supported");
-                    return;
-                  }
-
                   Navigator.push(context, MaterialPageRoute(builder: (context) {
                     return const CameraPage();
                   }));
@@ -223,7 +217,7 @@ class _HomePageState extends State<HomePage> {
                               Icon(Icons.warning_amber_rounded,
                                   color: Colors.white, size: 20),
                               Text(
-                                "  License expired! Renew your license ->",
+                                "  License expired! Renew your license",
                                 style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.white,

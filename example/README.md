@@ -1,11 +1,9 @@
 # Flutter Document Scanner
 
-A Flutter project that demonstrates how to use [Dynamsoft Document Normalizer](https://www.dynamsoft.com/document-normalizer/docs/core/introduction/?ver=latest&ver=latest) to rectify and enhance document images on Android, iOS, Windows, Linux, and web.
+A Flutter project that demonstrates how to use **Dynamsoft Capture Vision** to rectify and enhance document images on Android, iOS, Windows, Linux, and web.
 
 https://github.com/user-attachments/assets/45b47b3a-f5c9-40c8-a943-0f28baf9e508
 
-## Online Demo
-[https://yushulx.me/flutter_document_scan_sdk/](https://yushulx.me/flutter_document_scan_sdk/)
 
 ## Supported Platforms
 - **Web**
@@ -22,7 +20,6 @@ https://github.com/user-attachments/assets/45b47b3a-f5c9-40c8-a943-0f28baf9e508
         int? ret = await docScanner.init(
             'LICENSE-KEY');
         if (ret == 0) isLicenseValid = true;
-        await docScanner.setParameters(Template.color);
         return ret ?? -1;
     }
     ```

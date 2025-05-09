@@ -25,20 +25,13 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     FlutterDocumentScanSdkPlugin *self,
     FlMethodCall *method_call)
 {
+  bool isAsync = false;
   g_autoptr(FlMethodResponse) response = nullptr;
 
   const gchar *method = fl_method_call_get_name(method_call);
-  FlValue* args = fl_method_call_get_args(method_call);
+  FlValue *args = fl_method_call_get_args(method_call);
 
-  if (strcmp(method, "getPlatformVersion") == 0)
-  {
-    struct utsname uname_data = {};
-    uname(&uname_data);
-    g_autofree gchar *version = g_strdup_printf("Linux %s", uname_data.version);
-    g_autoptr(FlValue) result = fl_value_new_string(version);
-    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
-  }
-  else if (strcmp(method, "init") == 0)
+  if (strcmp(method, "init") == 0)
   {
     if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP)
     {
@@ -52,7 +45,7 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     }
     const char *license = fl_value_get_string(value);
 
-    int ret = DocumentManager::SetLicense(license);
+    int ret = self->manager->SetLicense(license);
     g_autoptr(FlValue) result = fl_value_new_int(ret);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }
@@ -79,26 +72,9 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     g_autoptr(FlValue) result = self->manager->GetParameters();
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }
-  else if (strcmp(method, "save") == 0)
-  {
-    if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP)
-    {
-      return;
-    }
-
-    FlValue *value = fl_value_lookup_string(args, "filename");
-    if (value == nullptr)
-    {
-      return;
-    }
-    const char *filename = fl_value_get_string(value);
-    int ret = self->manager->Save(filename);
-
-    g_autoptr(FlValue) result = fl_value_new_int(ret);
-    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
-  }
   else if (strcmp(method, "detectFile") == 0)
   {
+    isAsync = true;
     if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP)
     {
       return;
@@ -111,48 +87,59 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     }
     const char *filename = fl_value_get_string(value);
 
-    g_autoptr(FlValue) result = self->manager->DetectFile(filename);
-    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+    self->manager->DetectFile(method_call, filename);
   }
   else if (strcmp(method, "detectBuffer") == 0)
   {
+    isAsync = true;
     if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP)
     {
       return;
     }
 
-    FlValue* value = fl_value_lookup_string(args, "bytes");
-    if (value == nullptr) {
+    FlValue *value = fl_value_lookup_string(args, "bytes");
+    if (value == nullptr)
+    {
       return;
     }
-    unsigned char* bytes = (unsigned char*)fl_value_get_uint8_list(value);
+    unsigned char *bytes = (unsigned char *)fl_value_get_uint8_list(value);
 
     value = fl_value_lookup_string(args, "width");
-    if (value == nullptr) {
+    if (value == nullptr)
+    {
       return;
     }
     int width = fl_value_get_int(value);
 
     value = fl_value_lookup_string(args, "height");
-    if (value == nullptr) {
+    if (value == nullptr)
+    {
       return;
     }
     int height = fl_value_get_int(value);
 
     value = fl_value_lookup_string(args, "stride");
-    if (value == nullptr) {
+    if (value == nullptr)
+    {
       return;
     }
     int stride = fl_value_get_int(value);
 
     value = fl_value_lookup_string(args, "format");
-    if (value == nullptr) {
+    if (value == nullptr)
+    {
       return;
     }
     int format = fl_value_get_int(value);
 
-    g_autoptr(FlValue) result = self->manager->DetectBuffer(bytes, width, height, stride, format);
-    response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
+    value = fl_value_lookup_string(args, "rotation");
+    if (value == nullptr)
+    {
+      return;
+    }
+    int rotation = fl_value_get_int(value);
+
+    self->manager->DetectBuffer(method_call, bytes, width, height, stride, format, rotation);
   }
   else if (strcmp(method, "normalizeBuffer") == 0)
   {
@@ -161,32 +148,37 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
       return;
     }
 
-    FlValue* value = fl_value_lookup_string(args, "bytes");
-    if (value == nullptr) {
+    FlValue *value = fl_value_lookup_string(args, "bytes");
+    if (value == nullptr)
+    {
       return;
     }
-    unsigned char* bytes = (unsigned char*)fl_value_get_uint8_list(value);
+    unsigned char *bytes = (unsigned char *)fl_value_get_uint8_list(value);
 
     value = fl_value_lookup_string(args, "width");
-    if (value == nullptr) {
+    if (value == nullptr)
+    {
       return;
     }
     int width = fl_value_get_int(value);
 
     value = fl_value_lookup_string(args, "height");
-    if (value == nullptr) {
+    if (value == nullptr)
+    {
       return;
     }
     int height = fl_value_get_int(value);
 
     value = fl_value_lookup_string(args, "stride");
-    if (value == nullptr) {
+    if (value == nullptr)
+    {
       return;
     }
     int stride = fl_value_get_int(value);
 
     value = fl_value_lookup_string(args, "format");
-    if (value == nullptr) {
+    if (value == nullptr)
+    {
       return;
     }
     int format = fl_value_get_int(value);
@@ -247,7 +239,21 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     }
     int y4 = fl_value_get_int(value);
 
-    g_autoptr(FlValue) result = self->manager->NormalizeBuffer(bytes, width, height, stride, format, x1, y1, x2, y2, x3, y3, x4, y4);
+    value = fl_value_lookup_string(args, "rotation");
+    if (value == nullptr)
+    {
+      return;
+    }
+    int rotation = fl_value_get_int(value);
+
+    value = fl_value_lookup_string(args, "color");
+    if (value == nullptr)
+    {
+      return;
+    }
+    int color = fl_value_get_int(value);
+
+    g_autoptr(FlValue) result = self->manager->NormalizeBuffer(method_call, bytes, width, height, stride, format, x1, y1, x2, y2, x3, y3, x4, y4, rotation, color);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }
   else if (strcmp(method, "normalizeFile") == 0)
@@ -320,7 +326,14 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     }
     int y4 = fl_value_get_int(value);
 
-    g_autoptr(FlValue) result = self->manager->NormalizeFile(filename, x1, y1, x2, y2, x3, y3, x4, y4);
+    value = fl_value_lookup_string(args, "color");
+    if (value == nullptr)
+    {
+      return;
+    }
+    int color = fl_value_get_int(value);
+
+    g_autoptr(FlValue) result = self->manager->NormalizeFile(method_call, filename, x1, y1, x2, y2, x3, y3, x4, y4, color);
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(result));
   }
   else
@@ -328,7 +341,10 @@ static void flutter_document_scan_sdk_plugin_handle_method_call(
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
   }
 
-  fl_method_call_respond(method_call, response, nullptr);
+  if (!isAsync)
+  {
+    fl_method_call_respond(method_call, response, nullptr);
+  }
 }
 
 static void flutter_document_scan_sdk_plugin_dispose(GObject *object)
@@ -346,7 +362,6 @@ static void flutter_document_scan_sdk_plugin_class_init(FlutterDocumentScanSdkPl
 static void flutter_document_scan_sdk_plugin_init(FlutterDocumentScanSdkPlugin *self)
 {
   self->manager = new DocumentManager();
-  self->manager->Init();
 }
 
 static void method_call_cb(FlMethodChannel *channel, FlMethodCall *method_call,

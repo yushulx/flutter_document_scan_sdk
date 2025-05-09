@@ -1,3 +1,6 @@
+## 2.0.0
+- Updated the plugin with Dynamsoft Capture Vision SDK.
+
 ## 1.1.2
 - Support AGP 8 for Android.
 

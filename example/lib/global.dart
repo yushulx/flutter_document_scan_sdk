@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_document_scan_sdk/document_result.dart';
 import 'package:flutter_document_scan_sdk/flutter_document_scan_sdk.dart';
-import 'package:flutter_document_scan_sdk/template.dart';
 import 'dart:ui' as ui;
 
 FlutterDocumentScanSdk docScanner = FlutterDocumentScanSdk();
@@ -11,7 +10,6 @@ Future<int> initDocumentSDK() async {
   int? ret = await docScanner.init(
       'DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ==');
   if (ret == 0) isLicenseValid = true;
-  await docScanner.setParameters(Template.color);
   return ret ?? -1;
 }
 
@@ -98,7 +96,7 @@ List<DocumentResult> rotate90document(List<DocumentResult>? input, int height) {
       Offset(height - y3, x3),
       Offset(height - y4, x4)
     ];
-    DocumentResult newResult = DocumentResult(result.confidence, points, []);
+    DocumentResult newResult = DocumentResult(result.confidence, points);
 
     output.add(newResult);
   }
