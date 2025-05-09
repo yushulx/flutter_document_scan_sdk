@@ -24,7 +24,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
 
-    public func createNormalizedImage(_ result: CapturedResult) -> NSDictionary {
+    public func createNormalizedImage(_ result: CapturedResult) -> NSMutableDictionary {
         let dictionary = NSMutableDictionary()
 
         if let item = result.items?.first, item.type == .normalizedImage {
@@ -41,7 +41,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             dictionary.setObject(width, forKey: "width" as NSCopying)
             dictionary.setObject(height, forKey: "height" as NSCopying)
             dictionary.setObject(stride, forKey: "stride" as NSCopying)
-            dictionary.setObject(format, forKey: "format" as NSCopying)
+            dictionary.setObject(format.rawValue, forKey: "format" as NSCopying)
             dictionary.setObject(orientation, forKey: "orientation" as NSCopying)
             dictionary.setObject(length, forKey: "length" as NSCopying)
 
