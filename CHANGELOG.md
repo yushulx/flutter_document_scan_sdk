@@ -1,3 +1,6 @@
+## 2.0.1
+- Updated SDKs for Android and iOS.
+
 ## 2.0.0
 - Updated the plugin with Dynamsoft Capture Vision SDK.
 

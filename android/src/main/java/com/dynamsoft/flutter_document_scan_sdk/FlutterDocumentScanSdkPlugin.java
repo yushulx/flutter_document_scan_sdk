@@ -34,11 +34,10 @@ import com.dynamsoft.core.basic_structures.CapturedResultItem;
 import com.dynamsoft.core.basic_structures.ImageData;
 import com.dynamsoft.core.basic_structures.Quadrilateral;
 import com.dynamsoft.core.basic_structures.EnumImagePixelFormat;
-import com.dynamsoft.ddn.NormalizedImageResultItem;
-import com.dynamsoft.ddn.DetectedQuadResultItem;
-import com.dynamsoft.ddn.NormalizedImagesResult;
-import com.dynamsoft.ddn.DetectedQuadsResult;
+import com.dynamsoft.ddn.EnhancedImageResultItem;
+import com.dynamsoft.ddn.ProcessedDocumentResult;
 import com.dynamsoft.ddn.EnumImageColourMode;
+import com.dynamsoft.ddn.DetectedQuadResultItem;
 
 import android.graphics.Point;
 
@@ -107,7 +106,7 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
 
         String parameters = "";
         try {
-            parameters = mRouter.outputSettings("");
+            parameters = mRouter.outputSettings("", false);
           } catch (Exception e) {
             result.success(e.toString());
             return;
@@ -174,15 +173,6 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
         final int y4 = call.argument("y4");
         final int rotation = call.argument("rotation");
         final int mode = call.argument("color");
-        
-        // int colorMode = EnumImageColourMode.ICM_GRAYSCALE;
-        // if (mode == 0) {
-        //   colorMode = EnumImageColourMode.ICM_COLOUR;
-        // } else if (mode == 1) {
-        //   colorMode = EnumImageColourMode.ICM_GRAYSCALE;
-        // } else if (mode == 2) {
-        //   colorMode = EnumImageColourMode.ICM_BINARY;
-        // }
 
         ImageData buffer = new ImageData();
         buffer.bytes = bytes;
@@ -311,61 +301,61 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
   }
 
   Map<String, Object> createNormalizedImage(CapturedResult result) {
-    NormalizedImagesResult normalizedImageResult = result.getNormalizedImagesResult();
-    Map<String, Object> map = new HashMap<>();
+      ProcessedDocumentResult normalizedImageResult = result.getProcessedDocumentResult();
+      Map<String, Object> map = new HashMap<>();
 
-    if (normalizedImageResult.getItems().length > 0) {
-      NormalizedImageResultItem item = normalizedImageResult.getItems()[0];
-      ImageData imageData = item.getImageData();
+      if (normalizedImageResult != null && normalizedImageResult.getEnhancedImageResultItems().length > 0) {
+          EnhancedImageResultItem item = normalizedImageResult.getEnhancedImageResultItems()[0];
+          ImageData imageData = item.getImageData();
 
-      int width = imageData.width;
-      int height = imageData.height;
-      int stride = imageData.stride;
-      int format = imageData.format;
-      byte[] data = imageData.bytes;
-      int length = imageData.bytes.length;
-      int orientation = imageData.orientation;
+          int width = imageData.width;
+          int height = imageData.height;
+          int stride = imageData.stride;
+          int format = imageData.format;
+          byte[] data = imageData.bytes;
+          int length = imageData.bytes.length;
+          int orientation = imageData.orientation;
 
-      map.put("width", width);
-      map.put("height", height);
-      map.put("stride", stride);
-      map.put("format", format);
-      map.put("orientation", orientation);
-      map.put("length", length);
+          map.put("width", width);
+          map.put("height", height);
+          map.put("stride", stride);
+          map.put("format", format);
+          map.put("orientation", orientation);
+          map.put("length", length);
 
-      byte[] rgba = new byte[width * height * 4];
+          byte[] rgba = new byte[width * height * 4];
 
-      if (format == EnumImagePixelFormat.IPF_RGB_888) {
-        int dataIndex = 0;
-        for (int i = 0; i < height; i++)
-        {
-            for (int j = 0; j < width; j++)
-            {
-                int index = i * width + j;
+          if (format == EnumImagePixelFormat.IPF_RGB_888) {
+              int dataIndex = 0;
+              for (int i = 0; i < height; i++)
+              {
+                  for (int j = 0; j < width; j++)
+                  {
+                      int index = i * width + j;
 
-                rgba[index * 4] = data[dataIndex];     // red
-                rgba[index * 4 + 1] = data[dataIndex + 1]; // green
-                rgba[index * 4 + 2] = data[dataIndex + 2];     // blue
-                rgba[index * 4 + 3] = (byte)255;                 // alpha
-                dataIndex += 3;
-            }
-        }
-      }
-      else if (format == EnumImagePixelFormat.IPF_GRAYSCALED | format == EnumImagePixelFormat.IPF_BINARY_8_INVERTED | format == EnumImagePixelFormat.IPF_BINARY_8) {
-        int dataIndex = 0;
-        for (int i = 0; i < height; i++)
-        {
-            for (int j = 0; j < width; j++)
-            {
-                int index = i * width + j;
-                rgba[index * 4] = data[dataIndex];
-                rgba[index * 4 + 1] = data[dataIndex];
-                rgba[index * 4 + 2] = data[dataIndex];
-                rgba[index * 4 + 3] = (byte)255;
-                dataIndex += 1;
-            }
-        }
-      }
+                      rgba[index * 4] = data[dataIndex];     // red
+                      rgba[index * 4 + 1] = data[dataIndex + 1]; // green
+                      rgba[index * 4 + 2] = data[dataIndex + 2];     // blue
+                      rgba[index * 4 + 3] = (byte)255;                 // alpha
+                      dataIndex += 3;
+                  }
+              }
+          }
+          else if (format == EnumImagePixelFormat.IPF_GRAYSCALED | format == EnumImagePixelFormat.IPF_BINARY_8_INVERTED | format == EnumImagePixelFormat.IPF_BINARY_8) {
+              int dataIndex = 0;
+              for (int i = 0; i < height; i++)
+              {
+                  for (int j = 0; j < width; j++)
+                  {
+                      int index = i * width + j;
+                      rgba[index * 4] = data[dataIndex];
+                      rgba[index * 4 + 1] = data[dataIndex];
+                      rgba[index * 4 + 2] = data[dataIndex];
+                      rgba[index * 4 + 3] = (byte)255;
+                      dataIndex += 1;
+                  }
+              }
+          }
       else if (format == EnumImagePixelFormat.IPF_BINARY) {
         byte[] grayscale = new byte[width * height];
         binary2grayscale(data, grayscale, width, height, stride, length);
@@ -384,12 +374,11 @@ public class FlutterDocumentScanSdkPlugin implements FlutterPlugin, MethodCallHa
             }
         }
       }
+          map.put("data", rgba);
+      }
 
-      map.put("data", rgba);
-    }
-    
 
-    return map;
+      return map;
   }
 
   void binary2grayscale(byte[] data, byte[] output, int width, int height, int stride, int length) {
