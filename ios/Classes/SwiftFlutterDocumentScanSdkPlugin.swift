@@ -1,12 +1,4 @@
-import DynamsoftCaptureVisionRouter
-
-import DynamsoftCore
-
-import DynamsoftDocumentNormalizer
-
-import DynamsoftLicense
-
-import DynamsoftUtility
+import DynamsoftCaptureVisionBundle
 
 import Flutter
 
@@ -26,96 +18,101 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
 
     public func createNormalizedImage(_ result: CapturedResult) -> NSMutableDictionary {
         let dictionary = NSMutableDictionary()
+        
+        if let items = result.items {
+            for item in items {
+                if item.type == .enhancedImage {
+                    let imageItem : EnhancedImageResultItem = item as! EnhancedImageResultItem
+                    let imageData = imageItem.imageData
+                    let width = imageData!.width
+                    let height = imageData!.height
+                    let stride = imageData!.stride
+                    let format = imageData!.format
+                    let data = imageData!.bytes
+                    let length = data.count
+                    let orientation = imageData!.orientation
 
-        if let item = result.items?.first, item.type == .normalizedImage {
-            let imageItem : NormalizedImageResultItem = item as! NormalizedImageResultItem
-            let imageData = imageItem.imageData
-            let width = imageData!.width
-            let height = imageData!.height
-            let stride = imageData!.stride
-            let format = imageData!.format
-            let data = imageData!.bytes
-            let length = data.count
-            let orientation = imageData!.orientation
+                    dictionary.setObject(width, forKey: "width" as NSCopying)
+                    dictionary.setObject(height, forKey: "height" as NSCopying)
+                    dictionary.setObject(stride, forKey: "stride" as NSCopying)
+                    dictionary.setObject(format.rawValue, forKey: "format" as NSCopying)
+                    dictionary.setObject(orientation, forKey: "orientation" as NSCopying)
+                    dictionary.setObject(length, forKey: "length" as NSCopying)
 
-            dictionary.setObject(width, forKey: "width" as NSCopying)
-            dictionary.setObject(height, forKey: "height" as NSCopying)
-            dictionary.setObject(stride, forKey: "stride" as NSCopying)
-            dictionary.setObject(format.rawValue, forKey: "format" as NSCopying)
-            dictionary.setObject(orientation, forKey: "orientation" as NSCopying)
-            dictionary.setObject(length, forKey: "length" as NSCopying)
+                    var rgba: [UInt8] = [UInt8](repeating: 0, count: Int(width * height) * 4)
 
-            var rgba: [UInt8] = [UInt8](repeating: 0, count: Int(width * height) * 4)
-
-            if format == ImagePixelFormat.RGB888 {
-                var dataIndex = 0
-                for i in 0..<height {
-                    for j in 0..<width {
-                        let index = i * width + j
-                        rgba[Int(index) * 4] = data[dataIndex]  // red
-                        rgba[Int(index) * 4 + 1] = data[dataIndex + 1]  // green
-                        rgba[Int(index) * 4 + 2] = data[dataIndex + 2]  // blue
-                        rgba[Int(index) * 4 + 3] = 255  // alpha
-                        dataIndex += 3
-                    }
-                }
-            } else if format == ImagePixelFormat.grayScaled || format == ImagePixelFormat.binaryInverted || format == ImagePixelFormat.binary8 {
-                var dataIndex = 0
-                for i in 0..<height {
-                    for j in 0..<width {
-                        let index = i * width + j
-                        rgba[Int(index) * 4] = data[dataIndex]
-                        rgba[Int(index) * 4 + 1] = data[dataIndex]
-                        rgba[Int(index) * 4 + 2] = data[dataIndex]
-                        rgba[Int(index) * 4 + 3] = 255
-                        dataIndex += 1
-                    }
-                }
-            } else if format == ImagePixelFormat.binary {
-                var grayscale: [UInt8] = [UInt8](repeating: 0, count: Int(width * height))
-
-                var index = 0
-                let skip = stride * 8 - width
-                var shift = 0
-                var n = 1
-
-                for i in 0..<length {
-                    let b = data[i]
-                    var byteCount = 7
-                    while byteCount >= 0 {
-                        let tmp = (b & (1 << byteCount)) >> byteCount
-
-                        if shift < stride * 8 * UInt(n) - skip {
-                            if tmp == 1 {
-                                grayscale[index] = 255
-                            } else {
-                                grayscale[index] = 0
+                    if format == ImagePixelFormat.RGB888 {
+                        var dataIndex = 0
+                        for i in 0..<height {
+                            for j in 0..<width {
+                                let index = i * width + j
+                                rgba[Int(index) * 4] = data[dataIndex]  // red
+                                rgba[Int(index) * 4 + 1] = data[dataIndex + 1]  // green
+                                rgba[Int(index) * 4 + 2] = data[dataIndex + 2]  // blue
+                                rgba[Int(index) * 4 + 3] = 255  // alpha
+                                dataIndex += 3
                             }
-                            index += 1
+                        }
+                    } else if format == ImagePixelFormat.grayScaled || format == ImagePixelFormat.binaryInverted || format == ImagePixelFormat.binary8 {
+                        var dataIndex = 0
+                        for i in 0..<height {
+                            for j in 0..<width {
+                                let index = i * width + j
+                                rgba[Int(index) * 4] = data[dataIndex]
+                                rgba[Int(index) * 4 + 1] = data[dataIndex]
+                                rgba[Int(index) * 4 + 2] = data[dataIndex]
+                                rgba[Int(index) * 4 + 3] = 255
+                                dataIndex += 1
+                            }
+                        }
+                    } else if format == ImagePixelFormat.binary {
+                        var grayscale: [UInt8] = [UInt8](repeating: 0, count: Int(width * height))
+
+                        var index = 0
+                        let skip = stride * 8 - width
+                        var shift = 0
+                        var n = 1
+
+                        for i in 0..<length {
+                            let b = data[i]
+                            var byteCount = 7
+                            while byteCount >= 0 {
+                                let tmp = (b & (1 << byteCount)) >> byteCount
+
+                                if shift < stride * 8 * UInt(n) - skip {
+                                    if tmp == 1 {
+                                        grayscale[index] = 255
+                                    } else {
+                                        grayscale[index] = 0
+                                    }
+                                    index += 1
+                                }
+
+                                byteCount -= 1
+                                shift += 1
+                            }
+
+                            if shift == Int(stride) * 8 * n {
+                                n += 1
+                            }
                         }
 
-                        byteCount -= 1
-                        shift += 1
+                        var dataIndex = 0
+                        for i in 0..<height {
+                            for j in 0..<width {
+                                let index = i * width + j
+                                rgba[Int(index) * 4] = grayscale[dataIndex]
+                                rgba[Int(index) * 4 + 1] = grayscale[dataIndex]
+                                rgba[Int(index) * 4 + 2] = grayscale[dataIndex]
+                                rgba[Int(index) * 4 + 3] = 255
+                                dataIndex += 1
+                            }
+                        }
                     }
-
-                    if shift == Int(stride) * 8 * n {
-                        n += 1
-                    }
+                    dictionary.setObject(rgba, forKey: "data" as NSCopying)
                 }
-
-                var dataIndex = 0
-                for i in 0..<height {
-                    for j in 0..<width {
-                        let index = i * width + j
-                        rgba[Int(index) * 4] = grayscale[dataIndex]
-                        rgba[Int(index) * 4 + 1] = grayscale[dataIndex]
-                        rgba[Int(index) * 4 + 2] = grayscale[dataIndex]
-                        rgba[Int(index) * 4 + 3] = 255
-                        dataIndex += 1
-                    }
-                }
+                
             }
-            dictionary.setObject(rgba, forKey: "data" as NSCopying)       
         }
 
         return dictionary
@@ -161,7 +158,7 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             result(ret)
 
         case "getParameters":
-            result(try? cvr.outputSettings(""))
+            result(try? cvr.outputSettings("", includeDefaultValues: false))
         case "detectFile":
             let arguments: NSDictionary = call.arguments as! NSDictionary
             DispatchQueue.global().async {
@@ -226,10 +223,12 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             imageData.orientation = rotation
 
             let points = [
-                CGPoint(x: x1, y: y1), CGPoint(x: x2, y: y2), CGPoint(x: x3, y: y3),
-                CGPoint(x: x4, y: y4),
+                CGPoint(x: x1, y: y1), CGPoint(x: x2, y: y2),
+                CGPoint(x: x3, y: y3), CGPoint(x: x4, y: y4)
             ]
-            let quad = Quadrilateral.init(pointArray: points)
+
+            let nsPoints = points.map { NSValue(cgPoint: $0) }
+            let quad = Quadrilateral(pointArray: nsPoints)
 
             var mode = ImageColourMode.colour
 
@@ -268,11 +267,13 @@ public class SwiftFlutterDocumentScanSdkPlugin: NSObject, FlutterPlugin, License
             let colorMode: Int = arguments.value(forKey: "color") as! Int
 
             let points = [
-                CGPoint(x: x1, y: y1), CGPoint(x: x2, y: y2), CGPoint(x: x3, y: y3),
-                CGPoint(x: x4, y: y4),
+                CGPoint(x: x1, y: y1), CGPoint(x: x2, y: y2),
+                CGPoint(x: x3, y: y3), CGPoint(x: x4, y: y4)
             ]
-            let quad = Quadrilateral.init(pointArray: points)
 
+            let nsPoints = points.map { NSValue(cgPoint: $0) }
+            let quad = Quadrilateral(pointArray: nsPoints)
+            
             var mode = ImageColourMode.colour
 
             switch colorMode {
