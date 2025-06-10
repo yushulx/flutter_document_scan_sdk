@@ -276,7 +276,7 @@ class DDNManager {
     NormalizedImage? image;
     if (normalizedResult.items.isNotEmpty) {
       for (NormalizedItem result in normalizedResult.items) {
-        if (result.type != 16) continue;
+        if (result.type != 64) continue;
         ImageData imageData = result.imageData;
         image = NormalizedImage(
             convertToRGBA32(imageData), imageData.width, imageData.height);

@@ -1,6 +1,6 @@
 name: flutter_document_scan_sdk
 description: A wrapper for Dynamsoft Capture Vision SDK, capable of detecting document edges and rectifying documents.
-version: 2.0.1
+version: 2.0.2
 homepage: https://github.com/yushulx/flutter_document_scan_sdk
 repository: https://github.com/yushulx/flutter_document_scan_sdk
 

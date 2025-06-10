@@ -1,3 +1,6 @@
+## 2.0.2
+- Updated the JavaScript SDK.
+
 ## 2.0.1
 - Updated SDKs for Android and iOS.
 
